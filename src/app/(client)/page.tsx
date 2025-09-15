@@ -1,14 +1,10 @@
-import AppLogo from "@/components/ui/brand-logo";
+import BannerSection from "@/components/sections/BannerSection";
 
 const LandingPage = () => {
   return (
-    <>
-      <div className="flex min-h-screen flex-col items-center justify-center p-24">
-        <AppLogo clickable />
-        <h1>Welcome to the Landing Page</h1>
-        <p>This is the main content of the landing page.</p>
-      </div>
-    </>
+    <main className="container mx-auto px-4">
+      <BannerSection className="mt-20 lg:mt-32" />
+    </main>
   );
 };
 export default LandingPage;

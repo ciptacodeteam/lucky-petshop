@@ -21,12 +21,12 @@ const MainHeader = ({ withAnnouncement, withCategoryBar }: Props) => {
         <div className="container mx-auto grid grid-cols-2 px-4 py-3">
           <div className="flex w-full items-center gap-4">
             <AppLogo className="h-16 w-44" />
-            <span className="text-primary ml-2 hidden text-lg font-bold md:block xl:ml-10">
+            <span className="text-primary ml-2 hidden text-lg font-bold lg:block xl:ml-10">
               #YourPetDeservesTheBest
             </span>
           </div>
           <div className="flex w-full items-center justify-end gap-2">
-            <div className="mr-0 hidden w-full sm:mr-4 md:flex md:justify-end xl:mr-10">
+            <div className="mr-0 hidden w-full sm:mr-4 lg:flex lg:justify-end xl:mr-10">
               <GlobalSearchBar placeholder="Search your products..." />
             </div>
             <Button
