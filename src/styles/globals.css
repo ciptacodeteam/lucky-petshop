@@ -51,6 +51,7 @@
   --color-highlight-foreground: var(--highlight-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-hover: var(--hover);
 }
 
 :root {
@@ -92,6 +93,7 @@
   --highlight-foreground: #142c73;
   --warning: #f88329;
   --warning-foreground: #fff;
+  --hover: oklch(0.98 0 271);
 }
 
 .dark {
@@ -132,6 +134,7 @@
   --highlight-foreground: #fff7cc;
   --warning: #f88329;
   --warning-foreground: #fff;
+  --hover: oklch(0.269 0 0);
 }
 
 @layer base {

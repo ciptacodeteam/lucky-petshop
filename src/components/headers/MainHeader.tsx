@@ -23,8 +23,8 @@ const MainHeader = ({ withAnnouncement }: Props) => {
               #YourPetDeservesTheBest
             </span>
           </div>
-          <div className="hidden w-full items-center justify-end gap-6 lg:flex">
-            <div className="mr-0 hidden w-full md:flex md:justify-end xl:mr-10">
+          <div className="flex w-full items-center justify-end gap-2">
+            <div className="mr-0 hidden w-full sm:mr-4 md:flex md:justify-end xl:mr-10">
               <GlobalSearchBar placeholder="Search your products..." />
             </div>
             <Button
@@ -44,10 +44,10 @@ const MainHeader = ({ withAnnouncement }: Props) => {
               </Badge>
               <IconShoppingCart />
             </Button>
+            <div className="ml-1 lg:hidden">
+              <MobileSidebar />
+            </div>
           </div>
-
-          {/* Mobile Sidebar */}
-          <MobileSidebar />
         </div>
       </div>
     </header>
