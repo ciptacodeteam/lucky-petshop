@@ -1,4 +1,5 @@
 import BannerSection from "@/components/sections/BannerSection";
+import BenefitHighlightSection from "@/components/sections/BenefitHighlightSection";
 import MarqueeSection from "@/components/sections/MarqueeSection";
 
 const LandingPage = () => {
@@ -8,6 +9,7 @@ const LandingPage = () => {
         <BannerSection className="mt-24 lg:mt-40" />
       </div>
       <MarqueeSection />
+      <BenefitHighlightSection />
     </main>
   );
 };

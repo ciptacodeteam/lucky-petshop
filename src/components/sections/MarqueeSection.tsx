@@ -20,7 +20,7 @@ const marqueeItems: MarqueeItem[] = [
 
 const MarqueeSection = () => {
   return (
-    <section className="bg-secondary py-3 lg:py-6">
+    <section className="bg-secondary my-12 py-3 lg:py-6">
       <div className="relative overflow-hidden">
         <Marquee autoFill speed={50}>
           {[...marqueeItems, ...marqueeItems].map((item, i) => (

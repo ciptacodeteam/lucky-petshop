@@ -83,7 +83,7 @@ const BannerSection = ({ className }: Props) => {
                     alt={item.title}
                     width={1200}
                     height={400}
-                    className="h-auto max-h-[400px] w-full rounded-lg object-cover"
+                    className="h-auto max-h-[500px] w-full rounded-lg object-cover"
                     priority
                   />
                 </Link>
@@ -93,7 +93,7 @@ const BannerSection = ({ className }: Props) => {
                   alt={item.title}
                   width={1200}
                   height={400}
-                  className="h-auto max-h-[400px] w-full rounded-lg object-cover"
+                  className="h-auto max-h-[500px] w-full rounded-lg object-cover"
                   priority
                 />
               )}
