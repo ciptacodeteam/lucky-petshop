@@ -7,7 +7,7 @@ type Props = {
 const ClientLayout = ({ children }: Props) => {
   return (
     <>
-      <MainHeader withAnnouncement />
+      <MainHeader withAnnouncement withCategoryBar />
       {children}
     </>
   );

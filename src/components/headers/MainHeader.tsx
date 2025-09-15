@@ -5,15 +5,17 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import AnnouncementBar from "./AnnouncementBar";
 import MobileSidebar from "../sidebars/MobileSidebar";
+import CategoryBar from "./CategoryBar";
 
 type Props = {
   withAnnouncement?: boolean;
+  withCategoryBar?: boolean;
 };
 
-const MainHeader = ({ withAnnouncement }: Props) => {
+const MainHeader = ({ withAnnouncement, withCategoryBar }: Props) => {
   return (
     <header className="fixed top-0 right-0 left-0 z-50 min-h-24">
-      <div className="w-full bg-white shadow-md">
+      <div className="w-full bg-white">
         {withAnnouncement && <AnnouncementBar />}
 
         <div className="container mx-auto grid grid-cols-2 px-4 py-3">
@@ -49,6 +51,12 @@ const MainHeader = ({ withAnnouncement }: Props) => {
             </div>
           </div>
         </div>
+
+        {withCategoryBar && (
+          <div className="hidden lg:block">
+            <CategoryBar />
+          </div>
+        )}
       </div>
     </header>
   );
