@@ -67,7 +67,7 @@ const BannerSection = ({ className }: Props) => {
   );
 
   return (
-    <section className={cn("py-20", className)}>
+    <section className={cn("py-16 pb-8 lg:pb-16", className)}>
       <Carousel
         setApi={setEmblaApi}
         className="relative"
