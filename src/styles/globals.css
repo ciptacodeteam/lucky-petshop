@@ -148,3 +148,13 @@
     @apply cursor-pointer;
   }
 }
+
+@layer utilities {
+  /* Clean Eye button in input */
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
