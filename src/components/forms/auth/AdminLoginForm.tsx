@@ -13,13 +13,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { z } from "@/lib/zod";
+import { apiClient } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.email("Email atau password salah"),
-  password: z.string().min(6).max(32, "Password maksimal 32 karakter"),
+  password: z.string().min(6).max(30, "Password maksimal 30 karakter"),
   rememberMe: z.boolean().optional(),
 });
 
@@ -35,8 +38,34 @@ const AdminLoginForm = () => {
     },
   });
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from") || "/admin/dashboard";
+
+  const { mutate, isPending } = apiClient.adminAuth.loginAdmin.useMutation({
+    onSuccess: async (data) => {
+      console.log("login success: ", data);
+
+      const token = data?.token;
+
+      if (token) {
+        // set cookie
+        document.cookie = `auth_session=${token}; path=/; max-age=86400`; // 1 day
+      }
+
+      toast.success("Berhasil masuk sebagai admin");
+      form.reset();
+      router.push(from);
+    },
+    onError: (error) => {
+      console.error("login error: ", error);
+      toast.error(error.message || "Gagal masuk sebagai admin");
+    },
+  });
+
   const onSubmit = (data: FormSchema) => {
     console.log("login payload: ", data);
+    mutate(data);
   };
 
   return (
@@ -104,7 +133,12 @@ const AdminLoginForm = () => {
           </div>
         </div>
 
-        <Button type="submit" className="mt-6 w-full" size={"lg"}>
+        <Button
+          type="submit"
+          className="mt-6 w-full"
+          size={"lg"}
+          loading={isPending}
+        >
           Masuk
         </Button>
       </form>

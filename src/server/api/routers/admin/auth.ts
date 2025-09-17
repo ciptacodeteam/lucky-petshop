@@ -38,8 +38,8 @@ export const adminAuthRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(2).max(50),
-        email: z.string().email(),
-        password: z.string().min(6).max(100),
+        email: z.email(),
+        password: z.string().min(6).max(35),
       }),
     )
     .mutation(async ({ input }) => {
@@ -51,7 +51,7 @@ export const adminAuthRouter = createTRPCRouter({
         if (existingAdmin) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "Admin with this email already exists",
+            message: "Email sudah terdaftar sebagai admin",
           });
         }
 
@@ -65,7 +65,10 @@ export const adminAuthRouter = createTRPCRouter({
         });
 
         if (!session) {
-          throw new Error("Failed to create admin account");
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create admin account",
+          });
         }
 
         return session?.user;
@@ -81,7 +84,52 @@ export const adminAuthRouter = createTRPCRouter({
 
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create admin account",
+          message: "Gagal membuat akun admin",
+          cause: error,
+        });
+      }
+    }),
+
+  loginAdmin: publicProcedure
+    .input(
+      z.object({
+        email: z.email("Email atau password salah"),
+        password: z.string().min(6).max(30, "Password maksimal 30 karakter"),
+        rememberMe: z.boolean().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const session = await auth.api.signInEmail({
+          body: {
+            email: input.email,
+            password: input.password,
+            rememberMe: input.rememberMe,
+          },
+        });
+        console.log("🚀 ~ session Login:", session);
+
+        if (!session) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Email atau password salah",
+          });
+        }
+
+        return session;
+      } catch (error) {
+        console.error("Admin login failed:", error);
+        if (error instanceof BetterAuthError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Gagal masuk sebagai admin",
           cause: error,
         });
       }
