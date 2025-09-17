@@ -36,14 +36,21 @@ type FormData = z.infer<typeof formSchema>;
 
 const AdminRegisterForm = () => {
   const form = useForm<FormData>({
+    mode: "onBlur",
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const router = useRouter();
 
   const { mutate, isPending } = apiClient.adminAuth.registerAdmin.useMutation({
     onSuccess: () => {
-      router.push("/admin/login");
+      router.push("/admin/auth/login");
       toast.success("Akun admin berhasil dibuat. Silakan login.");
     },
     onError: (error) => {

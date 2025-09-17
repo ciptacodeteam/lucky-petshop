@@ -26,6 +26,9 @@ type FormSchema = z.infer<typeof formSchema>;
 const AdminForgetPasswordForm = () => {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+    },
   });
 
   const router = useRouter();

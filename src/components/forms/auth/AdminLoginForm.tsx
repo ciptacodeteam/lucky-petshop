@@ -28,6 +28,11 @@ type FormSchema = z.infer<typeof formSchema>;
 const AdminLoginForm = () => {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
   });
 
   const onSubmit = (data: FormSchema) => {

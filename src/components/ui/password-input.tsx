@@ -7,7 +7,7 @@ import { Input, type InputProps } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 
-const PasswordInput = ({ className, ref, ...props }: InputProps) => {
+const PasswordInput = ({ className, ...props }: InputProps) => {
   const [showPassword, setShowPassword] = React.useState(false);
   const disabled =
     props.value === "" || props.value === undefined || props.disabled;
@@ -16,7 +16,6 @@ const PasswordInput = ({ className, ref, ...props }: InputProps) => {
     <div className="relative">
       <Input
         className={cn("hide-password-toggle pr-10", className)}
-        ref={ref}
         {...props}
         type={showPassword ? "text" : "password"}
       />

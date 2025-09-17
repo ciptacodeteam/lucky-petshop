@@ -31,6 +31,10 @@ type FormSchema = z.infer<typeof formSchema>;
 const AdminResetPasswordForm = () => {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
   });
 
   const onSubmit = (data: FormSchema) => {

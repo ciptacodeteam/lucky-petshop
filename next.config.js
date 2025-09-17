@@ -13,6 +13,11 @@ const config = {
         destination: "/admin/dashboard",
         permanent: true,
       },
+      {
+        source: "/admin/auth",
+        destination: "/admin/auth/login",
+        permanent: true,
+      },
     ];
   },
   webpack(config) {
