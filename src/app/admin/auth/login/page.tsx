@@ -1,4 +1,5 @@
 import AdminLoginForm from "@/components/forms/auth/AdminLoginForm";
+import AdminRegisterForm from "@/components/forms/auth/AdminRegisterForm";
 import {
   Card,
   CardContent,
@@ -6,21 +7,45 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { api } from "@/trpc/server";
 
-const AdminLoginPage = () => {
+export const dynamic = "force-dynamic";
+
+const AdminLoginPage = async () => {
+  const isAdminExists = await api.adminAuth.checkAdminExist();
+
   return (
-    <Card className="w-full max-w-md shadow-xl">
-      <CardHeader>
-        <CardTitle className="text-xl">Admin Login</CardTitle>
-        <CardDescription>
-          Silakan masuk untuk mengelola aplikasi
-        </CardDescription>
-      </CardHeader>
+    <>
+      {!isAdminExists?.exists ? (
+        <Card className="w-full max-w-md shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-xl">
+              Admin Login - Buat Akun Admin
+            </CardTitle>
+            <CardDescription>
+              Silakan buat akun admin untuk mengelola aplikasi
+            </CardDescription>
+          </CardHeader>
 
-      <CardContent>
-        <AdminLoginForm />
-      </CardContent>
-    </Card>
+          <CardContent>
+            <AdminRegisterForm />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="w-full max-w-md shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-xl">Admin Login</CardTitle>
+            <CardDescription>
+              Silakan masuk untuk mengelola aplikasi
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <AdminLoginForm />
+          </CardContent>
+        </Card>
+      )}
+    </>
   );
 };
 export default AdminLoginPage;
