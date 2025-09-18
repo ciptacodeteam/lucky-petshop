@@ -32,8 +32,6 @@ export const auth = betterAuth({
       const urlObj = new URL(urlDecoded);
       const callbackURL = urlObj.searchParams.get("callbackURL") || "";
 
-      console.log("🚀 ~ callbackURL:", callbackURL);
-
       let redirectTo = "/admin/auth/reset-password";
       if (!callbackURL.includes("/admin/auth/reset-password")) {
         redirectTo = "/auth/reset-password";
@@ -64,6 +62,15 @@ export const auth = betterAuth({
     inferAdditionalFields({
       user: {
         // Add any additional fields you want to infer
+        role: {
+          type: "string",
+          isRequired: true,
+        },
+        banned: {
+          type: "boolean",
+          isRequired: true,
+          defaultValue: false,
+        },
       },
     }),
     bearer(),
@@ -71,3 +78,5 @@ export const auth = betterAuth({
     nextCookies(),
   ],
 });
+
+export type Session = typeof auth.$Infer.Session;

@@ -25,7 +25,7 @@ const AdminResetPasswordPage = async ({ searchParams }: Props) => {
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
-        <CardTitle className="text-xl">Reset Password</CardTitle>
+        <CardTitle>Reset Password</CardTitle>
         <CardDescription>Silahkan masukkan password baru Anda</CardDescription>
       </CardHeader>
 

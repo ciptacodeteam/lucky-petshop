@@ -14,6 +14,8 @@ const alertVariants = cva(
         info: "text-blue-700 bg-blue-50 [&>svg]:text-blue-700 *:data-[slot=alert-description]:text-blue-700/90",
         warning:
           "text-amber-700 bg-amber-50 [&>svg]:text-amber-700 *:data-[slot=alert-description]:text-amber-700/90",
+        success:
+          "text-green-700 bg-green-50 [&>svg]:text-green-700 *:data-[slot=alert-description]:text-green-700/90",
       },
     },
     defaultVariants: {

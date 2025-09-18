@@ -16,7 +16,7 @@ import { authClient } from "@/lib/auth-client";
 import { z } from "@/lib/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -39,7 +39,6 @@ const AdminLoginForm = () => {
     },
   });
 
-  const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get("from") || "/admin/dashboard";
 
@@ -50,6 +49,7 @@ const AdminLoginForm = () => {
       email: data.email,
       password: data.password,
       rememberMe: data.rememberMe,
+      callbackURL: from,
       fetchOptions: {
         onRequest: () => {
           setIsPending(true);
@@ -57,7 +57,6 @@ const AdminLoginForm = () => {
         onSuccess: () => {
           toast.success("Berhasil masuk sebagai admin");
           form.reset();
-          router.push(from);
         },
         onError: (err) => {
           console.error("login error: ", err.error);

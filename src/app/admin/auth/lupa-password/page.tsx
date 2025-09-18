@@ -13,7 +13,7 @@ const AdminForgetPasswordPage = () => {
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
-        <CardTitle className="text-xl">Lupa Password</CardTitle>
+        <CardTitle>Lupa Password</CardTitle>
         <CardDescription>
           Silakan masukkan email Anda untuk mereset password
         </CardDescription>

@@ -32,7 +32,7 @@ const AdminForgetPasswordForm = () => {
     },
   });
 
-  const { mutate, isPending } =
+  const { mutate, isPending, isSuccess } =
     apiClient.admin.auth.requestPasswordReset.useMutation({
       onSuccess: () => {
         toast.success("Link reset password telah dikirim ke email Anda");
@@ -52,13 +52,14 @@ const AdminForgetPasswordForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="space-y-5">
-          <Alert variant="info">
-            <IconInfoCircle />
-            <AlertDescription>
-              Link untuk mereset password akan dikirim ke email Anda jika
-              terdaftar
-            </AlertDescription>
-          </Alert>
+          {isSuccess && (
+            <Alert variant="success">
+              <IconInfoCircle />
+              <AlertDescription>
+                Link untuk mereset password telah dikirim ke email Anda
+              </AlertDescription>
+            </Alert>
+          )}
 
           <FormField
             control={form.control}

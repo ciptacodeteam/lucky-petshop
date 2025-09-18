@@ -19,9 +19,7 @@ const AdminLoginPage = async () => {
       {!isAdminExists?.exists ? (
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader>
-            <CardTitle className="text-xl">
-              Admin Login - Buat Akun Admin
-            </CardTitle>
+            <CardTitle>Admin Login - Buat Akun Admin</CardTitle>
             <CardDescription>
               Silakan buat akun admin untuk mengelola aplikasi
             </CardDescription>
@@ -34,7 +32,7 @@ const AdminLoginPage = async () => {
       ) : (
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader>
-            <CardTitle className="text-xl">Admin Login</CardTitle>
+            <CardTitle>Admin Login</CardTitle>
             <CardDescription>
               Silakan masuk untuk mengelola aplikasi
             </CardDescription>
