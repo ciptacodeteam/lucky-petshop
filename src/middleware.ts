@@ -30,6 +30,13 @@ export async function middleware(req: NextRequest) {
       return pathname === route;
     });
 
+    if (!!session && session.user.role !== "admin") {
+      await auth.api.signOut({
+        headers: await headers(),
+      });
+      return NextResponse.redirect(new URL("/admin/auth/login", req.url));
+    }
+
     if (!!session && isAdminPublicRoute) {
       const redirectTo = req.nextUrl.clone();
       redirectTo.pathname = "/admin/dashboard";
