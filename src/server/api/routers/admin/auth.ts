@@ -4,7 +4,6 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { TRPCError } from "@trpc/server";
 import { APIError, BetterAuthError } from "better-auth";
-import { headers } from "next/headers";
 
 export const adminAuthRouter = createTRPCRouter({
   checkAccountExist: publicProcedure
@@ -91,56 +90,6 @@ export const adminAuthRouter = createTRPCRouter({
       }
     }),
 
-  login: publicProcedure
-    .input(
-      z.object({
-        email: z.email("Email atau password salah"),
-        password: z.string().min(6).max(30, "Password maksimal 30 karakter"),
-        rememberMe: z.boolean().optional(),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      try {
-        const session = await auth.api.signInEmail({
-          headers: await headers(),
-          body: {
-            email: input.email,
-            password: input.password,
-            rememberMe: input.rememberMe,
-          },
-        });
-        console.log("🚀 ~ session Login:", session);
-
-        if (!session) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "Email atau password salah",
-          });
-        }
-
-        return session;
-      } catch (error) {
-        console.error("Admin login failed:", error);
-        if (error instanceof APIError) {
-          console.log(error.message, error.status);
-        }
-
-        if (error instanceof BetterAuthError) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: error.message,
-            cause: error,
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Gagal masuk sebagai admin",
-          cause: error,
-        });
-      }
-    }),
-
   logout: publicProcedure.mutation(async ({ ctx }) => {
     try {
       const res = await auth.api.signOut({
@@ -156,4 +105,87 @@ export const adminAuthRouter = createTRPCRouter({
       });
     }
   }),
+
+  requestPasswordReset: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email("Email tidak valid"),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        await auth.api.requestPasswordReset({
+          body: {
+            email: input.email,
+            redirectTo: `/admin/auth/reset-password`,
+          },
+        });
+        return { success: true };
+      } catch (error) {
+        console.error("Request password reset failed:", error);
+        if (error instanceof APIError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Gagal mengirim email reset password",
+          cause: error,
+        });
+      }
+    }),
+
+  resetPassword: publicProcedure
+    .input(
+      z.object({
+        token: z.string().min(1, "Token diperlukan"),
+        password: z.string().min(6).max(35),
+        confirmPassword: z.string().min(6).max(35),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (input.password !== input.confirmPassword) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Password dan konfirmasi password tidak sesuai",
+        });
+      }
+
+      try {
+        const session = await auth.api.resetPassword({
+          headers: ctx.headers,
+          body: {
+            token: input.token,
+            newPassword: input.password,
+          },
+        });
+
+        if (!session) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Gagal mereset password",
+          });
+        }
+
+        return { success: true };
+      } catch (error) {
+        console.error("Reset password failed:", error);
+        if (error instanceof BetterAuthError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Gagal mereset password",
+          cause: error,
+        });
+      }
+    }),
 });

@@ -14,6 +14,12 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url().optional(),
     SESSION_COOKIE_NAME: z.string().default("session_token"),
+
+    SUPPORT_EMAIL: z.email().optional(),
+    EMAIL_HOST: z.string().optional(),
+    EMAIL_PORT: z.coerce.number().optional(),
+    EMAIL_USER: z.string().optional(),
+    EMAIL_PASSWORD: z.string().optional(),
   },
 
   /**
@@ -37,6 +43,12 @@ export const env = createEnv({
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
     SESSION_COOKIE_NAME: process.env.SESSION_COOKIE_NAME,
+
+    SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
+    EMAIL_HOST: process.env.EMAIL_HOST,
+    EMAIL_PORT: process.env.EMAIL_PORT,
+    EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

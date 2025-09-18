@@ -60,7 +60,7 @@ const AdminLoginForm = () => {
           router.push(from);
         },
         onError: (err) => {
-          console.error("login error: ", err);
+          console.error("login error: ", err.error);
           toast.error(err.error.message || "Gagal masuk sebagai admin");
         },
       },

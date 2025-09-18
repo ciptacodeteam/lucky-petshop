@@ -1,8 +1,6 @@
 "use client";
 
-import { z } from "@/lib/zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,8 +11,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { z } from "@/lib/zod";
+import { apiClient } from "@/trpc/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { IconInfoCircle } from "@tabler/icons-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const formSchema = z
   .object({
@@ -29,6 +32,9 @@ const formSchema = z
 type FormSchema = z.infer<typeof formSchema>;
 
 const AdminResetPasswordForm = () => {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,8 +43,24 @@ const AdminResetPasswordForm = () => {
     },
   });
 
+  const router = useRouter();
+
+  const { mutate, isPending } = apiClient.admin.auth.resetPassword.useMutation({
+    onSuccess: () => {
+      toast.success("Password berhasil diubah, silahkan login");
+      router.push("/admin/auth/login");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Gagal mengubah password");
+    },
+  });
+
   const onSubmit = (data: FormSchema) => {
-    console.log("reset password payload: ", data);
+    if (!token) {
+      return toast.error("Token tidak ditemukan");
+    }
+
+    mutate({ ...data, token: token });
   };
 
   return (
@@ -72,7 +94,7 @@ const AdminResetPasswordForm = () => {
           />
           <FormField
             control={form.control}
-            name="password"
+            name="confirmPassword"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Konfirmasi Password</FormLabel>
@@ -89,7 +111,12 @@ const AdminResetPasswordForm = () => {
           />
         </div>
 
-        <Button type="submit" className="mt-6 w-full" size={"lg"}>
+        <Button
+          type="submit"
+          className="mt-6 w-full"
+          size={"lg"}
+          loading={isPending}
+        >
           Reset Password
         </Button>
       </form>
