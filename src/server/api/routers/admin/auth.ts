@@ -3,10 +3,11 @@ import { z } from "@/lib/zod";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { TRPCError } from "@trpc/server";
-import { BetterAuthError } from "better-auth";
+import { APIError, BetterAuthError } from "better-auth";
+import { headers } from "next/headers";
 
 export const adminAuthRouter = createTRPCRouter({
-  checkAdminExist: publicProcedure
+  checkAccountExist: publicProcedure
     .output(z.object({ exists: z.boolean() }).nullable())
     .query(async (): Promise<{ exists: boolean } | null> => {
       try {
@@ -34,7 +35,7 @@ export const adminAuthRouter = createTRPCRouter({
       }
     }),
 
-  registerAdmin: publicProcedure
+  register: publicProcedure
     .input(
       z.object({
         name: z.string().min(2).max(50),
@@ -90,7 +91,7 @@ export const adminAuthRouter = createTRPCRouter({
       }
     }),
 
-  loginAdmin: publicProcedure
+  login: publicProcedure
     .input(
       z.object({
         email: z.email("Email atau password salah"),
@@ -101,6 +102,7 @@ export const adminAuthRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         const session = await auth.api.signInEmail({
+          headers: await headers(),
           body: {
             email: input.email,
             password: input.password,
@@ -119,6 +121,10 @@ export const adminAuthRouter = createTRPCRouter({
         return session;
       } catch (error) {
         console.error("Admin login failed:", error);
+        if (error instanceof APIError) {
+          console.log(error.message, error.status);
+        }
+
         if (error instanceof BetterAuthError) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -134,4 +140,20 @@ export const adminAuthRouter = createTRPCRouter({
         });
       }
     }),
+
+  logout: publicProcedure.mutation(async ({ ctx }) => {
+    try {
+      const res = await auth.api.signOut({
+        headers: ctx.headers,
+      });
+      return { success: res?.success || false };
+    } catch (error) {
+      console.error("Admin logout failed:", error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Gagal keluar dari admin",
+        cause: error,
+      });
+    }
+  }),
 });

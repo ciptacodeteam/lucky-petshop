@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { authClient } from "@/lib/auth-client";
 import { z } from "@/lib/zod";
-import { apiClient } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -42,30 +43,30 @@ const AdminLoginForm = () => {
   const searchParams = useSearchParams();
   const from = searchParams.get("from") || "/admin/dashboard";
 
-  const { mutate, isPending } = apiClient.adminAuth.loginAdmin.useMutation({
-    onSuccess: async (data) => {
-      console.log("login success: ", data);
+  const [isPending, setIsPending] = useState(false);
 
-      const token = data?.token;
+  const onSubmit = async (data: FormSchema) => {
+    await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+      rememberMe: data.rememberMe,
+      fetchOptions: {
+        onRequest: () => {
+          setIsPending(true);
+        },
+        onSuccess: () => {
+          toast.success("Berhasil masuk sebagai admin");
+          form.reset();
+          router.push(from);
+        },
+        onError: (err) => {
+          console.error("login error: ", err);
+          toast.error(err.error.message || "Gagal masuk sebagai admin");
+        },
+      },
+    });
 
-      if (token) {
-        // set cookie
-        document.cookie = `auth_session=${token}; path=/; max-age=86400`; // 1 day
-      }
-
-      toast.success("Berhasil masuk sebagai admin");
-      form.reset();
-      router.push(from);
-    },
-    onError: (error) => {
-      console.error("login error: ", error);
-      toast.error(error.message || "Gagal masuk sebagai admin");
-    },
-  });
-
-  const onSubmit = (data: FormSchema) => {
-    console.log("login payload: ", data);
-    mutate(data);
+    setIsPending(false);
   };
 
   return (

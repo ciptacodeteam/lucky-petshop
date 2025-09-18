@@ -1,19 +1,18 @@
-import { getSessionCookie } from "better-auth/cookies";
+import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { env } from "./env";
+import { auth } from "./lib/auth";
 
-const adminPublicRoutes: string[] = ["/admin/auth/*", "/trpc/adminAuth.*"];
+const adminPublicRoutes: string[] = ["/admin/auth/*", "/trpc/admin.*"];
 
 // const publicRoutes: string[] = [];
 
 export async function middleware(req: NextRequest) {
-  const sessionCookie = getSessionCookie(req, {
-    cookieName: env.BETTER_AUTH_COOKIE_NAME,
+  const session = await auth.api.getSession({
+    headers: await headers(),
   });
-  console.log("🚀 ~ middleware ~ sessionCookie:", sessionCookie);
+  console.log("🚀 ~ middleware ~ session:", session);
 
   const pathname = req.nextUrl.pathname;
-  console.log("🚀 ~ middleware ~ pathname:", pathname);
   const isAdminRoute = pathname.startsWith("/admin");
   //   const isPublicRoute = publicRoutes.includes(pathname);
 
@@ -30,17 +29,14 @@ export async function middleware(req: NextRequest) {
 
       return pathname === route;
     });
-    console.log("🚀 ~ middleware ~ pathname:", pathname, isAdminPublicRoute);
 
-    if (!!sessionCookie && isAdminPublicRoute) {
-      console.log("run A: ", pathname, !!sessionCookie, isAdminPublicRoute);
+    if (!!session && isAdminPublicRoute) {
       const redirectTo = req.nextUrl.clone();
       redirectTo.pathname = "/admin/dashboard";
       return NextResponse.redirect(redirectTo);
     }
 
-    if (!sessionCookie && !isAdminPublicRoute) {
-      console.log("run B: ", pathname, !sessionCookie, !isAdminPublicRoute);
+    if (!session && !isAdminPublicRoute) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/admin/auth/login";
       if (pathname !== "/admin/auth/login" && pathname !== "/admin/dashboard") {
@@ -54,6 +50,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
+  runtime: "nodejs",
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",

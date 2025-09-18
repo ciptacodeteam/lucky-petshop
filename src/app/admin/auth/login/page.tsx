@@ -12,7 +12,7 @@ import { api } from "@/trpc/server";
 export const dynamic = "force-dynamic";
 
 const AdminLoginPage = async () => {
-  const isAdminExists = await api.adminAuth.checkAdminExist();
+  const isAdminExists = await api.admin.auth.checkAccountExist();
 
   return (
     <>

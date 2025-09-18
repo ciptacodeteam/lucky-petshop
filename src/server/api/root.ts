@@ -9,7 +9,9 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 
 const adminRoutes = {
   // other admin routers can be added here
-  adminAuth: adminAuthRouter,
+  admin: {
+    auth: adminAuthRouter,
+  },
 };
 
 const appRoutes = {

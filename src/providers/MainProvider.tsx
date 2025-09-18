@@ -10,7 +10,7 @@ const MainProvider = ({ children }: Props) => {
   return (
     <>
       {children}
-      <Toaster position="top-center" />
+      <Toaster position="top-center" richColors />
     </>
   );
 };
