@@ -26,6 +26,8 @@ model User {
   banReason  String?   @map("ban_reason")
   banExpires DateTime? @map("ban_expires")
 
+  notifications Notification[]
+
   @@unique([email])
   @@map("users")
 }
@@ -76,3 +78,103 @@ model Verification {
 
   @@map("verification")
 }
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  subCategories SubCategory[]
+
+  @@map("categories")
+}
+
+model SubCategory {
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([name, categoryId])
+  @@map("sub_categories")
+}
+
+model ProductType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // products Product[]
+
+  @@map("product_types")
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  image     String
+  link      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("banners")
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("announcements")
+}
+
+model DiscountCode {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  description String?
+  percentage  Float
+  active      Boolean  @default(true)
+  startDate   DateTime @default(now()) @map("start_date")
+  endDate     DateTime @map("end_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("discount_codes")
+}
+
+model Notification {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  referenceId   String?  @map("reference_id")
+  referenceType String?  @map("reference_type")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  content       String
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}
+
+model AdminNotification {
+  id            String   @id @default(cuid())
+  referenceId   String?  @map("reference_id")
+  referenceType String?  @map("reference_type")
+  title         String
+  content       String
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("admin_notifications")
+}
+
+// TODO: PRODUCT MODEL, ORDERS, ORDER ITEMS, USER CARTS USER DISCOUNT CODES.

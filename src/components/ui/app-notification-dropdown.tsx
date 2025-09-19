@@ -14,23 +14,23 @@ const notifications = [
   {
     id: 1,
     title: "New user registered",
-    description: "A new user has just registered.",
+    content: "A new user has just registered.",
     time: "2m ago",
-    isRead: false,
+    read: false,
   },
   {
     id: 2,
     title: "Server downtime",
-    description: "Scheduled maintenance at 12:00 AM.",
+    content: "Scheduled maintenance at 12:00 AM.",
     time: "1h ago",
-    isRead: true,
+    read: true,
   },
   {
     id: 3,
     title: "New order received",
-    description: "You have a new order from John Doe.",
+    content: "You have a new order from John Doe.",
     time: "3h ago",
-    isRead: false,
+    read: false,
   },
 ];
 
@@ -46,12 +46,12 @@ const AppNotificationDropdown = () => {
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center gap-2 px-4 py-2 font-medium">
           Notifications
-          {notifications.some((n) => !n.isRead) && (
+          {notifications.some((n) => !n.read) && (
             <Badge
               className="h-5 min-w-5 rounded-full px-1 font-mono font-semibold tabular-nums"
               variant="secondary"
             >
-              {notifications.filter((n) => !n.isRead).length}
+              {notifications.filter((n) => !n.read).length}
             </Badge>
           )}
         </DropdownMenuLabel>
@@ -63,7 +63,7 @@ const AppNotificationDropdown = () => {
                 <div
                   key={notification.id}
                   className={`flex items-start gap-3 border-b px-4 py-3 transition-colors last:border-b-0 ${
-                    notification.isRead ? "bg-background" : "bg-accent"
+                    notification.read ? "bg-background" : "bg-accent"
                   } hover:bg-muted cursor-pointer`}
                   tabIndex={0}
                   role="button"
@@ -74,13 +74,13 @@ const AppNotificationDropdown = () => {
                       {notification.title}
                     </span>
                     <span className="text-muted-foreground line-clamp-2 text-xs">
-                      {notification.description}
+                      {notification.content}
                     </span>
                     <span className="text-muted-foreground mt-1 text-xs">
                       {notification.time}
                     </span>
                   </div>
-                  {!notification.isRead && (
+                  {!notification.read && (
                     <span
                       className="bg-warning mt-1 inline-block h-2 w-2 rounded-full"
                       aria-label="Unread"
