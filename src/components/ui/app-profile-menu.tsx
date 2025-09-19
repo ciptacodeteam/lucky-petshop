@@ -54,11 +54,15 @@ const AppProfileMenu = () => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push("/admin/profil")}>
+          <DropdownMenuItem
+            onClick={() => router.push("/admin/pengaturan/akun-saya")}
+          >
             <User />
             Akun Saya
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push("/admin/notifikasi")}>
+          <DropdownMenuItem
+            onClick={() => router.push("/admin/pengaturan/notifikasi")}
+          >
             <Bell />
             Notifikasi
           </DropdownMenuItem>

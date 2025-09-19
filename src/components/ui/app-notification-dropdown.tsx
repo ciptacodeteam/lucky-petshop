@@ -91,7 +91,7 @@ const AppNotificationDropdown = () => {
 
               <div className="flex-center px-4 py-2">
                 <Link
-                  href="#"
+                  href="/admin/pengaturan/notifikasi"
                   className="text-muted-foreground inline-block px-4 py-2 text-xs"
                 >
                   View all notifications

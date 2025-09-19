@@ -11,9 +11,9 @@ const AppDashboardHeader = () => {
         <SidebarTrigger className="-ml-1" />
         <Separator
           orientation="vertical"
-          className="mr-2 hidden data-[orientation=vertical]:h-4 md:inline-flex"
+          className="mr-2 hidden data-[orientation=vertical]:h-4 lg:inline-flex"
         />
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <AppBreadcrumb />
         </div>
       </div>
