@@ -1,9 +1,21 @@
+import AdminChangePasswordForm from "@/components/forms/auth/AdminChangePasswordForm";
+import AppSectionHeader from "@/components/ui/app-section-header";
+
 const ProfilePage = () => {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 p-8">
-      <h2 className="mb-4 text-2xl font-semibold">Kata Sandi</h2>
-      <p className="text-gray-600">Halaman pengaturan kata sandi.</p>
-    </div>
+    <main>
+      <AppSectionHeader
+        withBorder
+        title="Pengaturan Kata Sandi"
+        description="Ubah kata sandi akun admin Anda secara berkala untuk menjaga keamanan."
+      />
+
+      <main>
+        <section>
+          <AdminChangePasswordForm />
+        </section>
+      </main>
+    </main>
   );
 };
 export default ProfilePage;

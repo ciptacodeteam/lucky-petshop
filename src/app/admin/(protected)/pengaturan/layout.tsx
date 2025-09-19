@@ -36,13 +36,13 @@ const SettingLayout = ({ children }: Props) => {
     <div className="flex flex-col lg:flex-row">
       <aside className="bg-background w-full lg:w-64">
         <nav className="p-4 pt-0 lg:p-6">
-          <ul className="flex gap-2 overflow-x-auto lg:flex-col lg:space-y-2">
+          <ul className="flex gap-2 overflow-x-auto lg:flex-col">
             {settingMenus.map(({ href, icon, label }) => (
               <li key={href} className="flex-1">
                 <Link
                   href={href}
                   className={cn(
-                    "hover:bg-muted hover:text-primary text-muted-foreground flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors md:justify-start",
+                    "hover:bg-muted hover:text-foreground text-muted-foreground flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors md:justify-start",
                     isActive(href) && "bg-muted text-foreground font-semibold",
                   )}
                   prefetch

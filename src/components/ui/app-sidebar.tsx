@@ -24,6 +24,7 @@ import {
   IconDogBowl,
   IconShoppingCart,
   IconUser,
+  IconUsers,
 } from "@tabler/icons-react";
 import Link from "next/link";
 
@@ -33,6 +34,12 @@ const data = {
       title: "Dashboard",
       url: "/admin/dashboard",
       icon: IconCategory,
+      items: [],
+    },
+    {
+      title: "Kelola Kustomer",
+      url: "/admin/kelola-kustomer",
+      icon: IconUsers,
       items: [],
     },
     {
