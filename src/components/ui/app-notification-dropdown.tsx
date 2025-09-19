@@ -38,9 +38,15 @@ const AppNotificationDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="relative">
           <IconBell className="!size-6" />
           <span className="sr-only">Open notifications</span>
+          {notifications.some((n) => !n.read) && (
+            <span
+              className="absolute top-1 right-1 inline-block h-2 w-2 rounded-full bg-red-500"
+              aria-label="Unread notifications"
+            />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
