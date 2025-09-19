@@ -26,7 +26,6 @@ export const auth = betterAuth({
     minPasswordLength: 6,
     maxPasswordLength: 35,
     sendResetPassword: async ({ user, token, url }) => {
-      console.log("🚀 ~ url:", url);
       // extract callbackURL from url and check if callbackURL is contains /admin/auth/reset-password
       const urlDecoded = decodeURIComponent(url);
       const urlObj = new URL(urlDecoded);

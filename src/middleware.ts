@@ -10,7 +10,6 @@ export async function middleware(req: NextRequest) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  console.log("🚀 ~ middleware ~ session:", session);
 
   const pathname = req.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
