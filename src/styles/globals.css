@@ -52,6 +52,7 @@
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-hover: var(--hover);
+  --text-xs: 0.75rem;
 }
 
 :root {
@@ -157,4 +158,12 @@
     visibility: hidden;
     pointer-events: none;
   }
+}
+
+@utility flex-center {
+  @apply flex items-center justify-center;
+}
+
+@utility flex-between {
+  @apply flex items-center justify-between;
 }

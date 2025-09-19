@@ -18,14 +18,16 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
+import type { TablerIcon } from "@tabler/icons-react";
 
 export function NavMain({
   items,
 }: {
   items: {
     title: string;
-    url: string;
-    icon: LucideIcon;
+    url?: string;
+    icon: LucideIcon | TablerIcon;
     isActive?: boolean;
     items?: {
       title: string;
@@ -40,14 +42,16 @@ export function NavMain({
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={item.title}>
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
               {item.items?.length ? (
                 <>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton asChild tooltip={item.title}>
+                      <div className="flex w-full cursor-pointer items-center gap-2">
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </div>
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuAction className="data-[state=open]:rotate-90">
                       <ChevronRight />
@@ -56,19 +60,33 @@ export function NavMain({
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
+                      {item.items.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.url}>
                           <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>
+                            <Link href={subItem.url} prefetch>
                               <span>{subItem.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
                     </SidebarMenuSub>
                   </CollapsibleContent>
                 </>
-              ) : null}
+              ) : (
+                <SidebarMenuButton asChild tooltip={item.title}>
+                  {item.url ? (
+                    <Link href={item.url} prefetch>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  ) : (
+                    <div className="flex w-full cursor-pointer items-center gap-2">
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </div>
+                  )}
+                </SidebarMenuButton>
+              )}
             </SidebarMenuItem>
           </Collapsible>
         ))}

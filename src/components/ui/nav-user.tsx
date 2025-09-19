@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from "lucide-react";
+import { Bell, ChevronsUpDown, LogOut, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,6 +20,11 @@ import {
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 import { Skeleton } from "./skeleton";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import AppUserProfile from "./app-user-profile";
+import { getNameInitial, getTwoWordName } from "@/lib/utils";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -27,9 +32,26 @@ export function NavUser() {
   const { data, isPending } = authClient.useSession();
   const user = data?.user;
 
-  const getInitial = (name: string | null | undefined) => {
-    if (!name) return "U";
-    return name.charAt(0).toUpperCase();
+  const router = useRouter();
+
+  const [isPendingLogout, setIsPendingLogout] = useState(false);
+
+  const onLogout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onRequest: () => setIsPendingLogout(true),
+        onSuccess: () => {
+          router.push("/admin/auth/login");
+          toast.success("Berhasil keluar");
+        },
+        onError: (error) => {
+          console.error("Error during sign out:", error);
+          toast.error(error.error.message || "Gagal keluar");
+        },
+      },
+    });
+
+    setIsPendingLogout(false);
   };
 
   if (isPending || !user) {
@@ -48,12 +70,16 @@ export function NavUser() {
               <Avatar className="h-8 w-8 rounded-lg">
                 {user.image && <AvatarImage src={user.image} alt={user.name} />}
                 <AvatarFallback className="rounded-lg">
-                  {getInitial(user.name)}
+                  {getNameInitial(user.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">
+                  {getTwoWordName(user.name)}
+                </span>
+                <span className="line-clamp-1 truncate text-xs">
+                  {user.email}
+                </span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -65,34 +91,27 @@ export function NavUser() {
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  {user.image && (
-                    <AvatarImage src={user.image} alt={user.name} />
-                  )}
-                  <AvatarFallback className="rounded-lg">
-                    {getInitial(user.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
-                </div>
-              </div>
+              <AppUserProfile />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
+              <DropdownMenuItem onClick={() => router.push("/admin/profil")}>
+                <User />
                 Akun Saya
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push("/admin/notifikasi")}
+              >
                 <Bell />
                 Notifikasi
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              loading={isPendingLogout}
+              variant="destructive"
+              onSelect={onLogout}
+            >
               <LogOut />
               Keluar
             </DropdownMenuItem>

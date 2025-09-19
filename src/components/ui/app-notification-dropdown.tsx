@@ -1,0 +1,113 @@
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { IconBell } from "@tabler/icons-react";
+import { Badge } from "./badge";
+import { Button } from "./button";
+import Link from "next/link";
+
+const notifications = [
+  {
+    id: 1,
+    title: "New user registered",
+    description: "A new user has just registered.",
+    time: "2m ago",
+    isRead: false,
+  },
+  {
+    id: 2,
+    title: "Server downtime",
+    description: "Scheduled maintenance at 12:00 AM.",
+    time: "1h ago",
+    isRead: true,
+  },
+  {
+    id: 3,
+    title: "New order received",
+    description: "You have a new order from John Doe.",
+    time: "3h ago",
+    isRead: false,
+  },
+];
+
+const AppNotificationDropdown = () => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <IconBell className="!size-6" />
+          <span className="sr-only">Open notifications</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-80">
+        <DropdownMenuLabel className="flex items-center gap-2 px-4 py-2 font-medium">
+          Notifications
+          {notifications.some((n) => !n.isRead) && (
+            <Badge
+              className="h-5 min-w-5 rounded-full px-1 font-mono font-semibold tabular-nums"
+              variant="secondary"
+            >
+              {notifications.filter((n) => !n.isRead).length}
+            </Badge>
+          )}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <div className="max-h-72 overflow-y-auto">
+          {notifications.length > 0 ? (
+            <>
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`flex items-start gap-3 border-b px-4 py-3 transition-colors last:border-b-0 ${
+                    notification.isRead ? "bg-background" : "bg-accent"
+                  } hover:bg-muted cursor-pointer`}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={notification.title}
+                >
+                  <div className="flex flex-1 flex-col">
+                    <span className="line-clamp-1 text-sm font-semibold">
+                      {notification.title}
+                    </span>
+                    <span className="text-muted-foreground line-clamp-2 text-xs">
+                      {notification.description}
+                    </span>
+                    <span className="text-muted-foreground mt-1 text-xs">
+                      {notification.time}
+                    </span>
+                  </div>
+                  {!notification.isRead && (
+                    <span
+                      className="bg-warning mt-1 inline-block h-2 w-2 rounded-full"
+                      aria-label="Unread"
+                    />
+                  )}
+                </div>
+              ))}
+
+              <div className="flex-center px-4 py-2">
+                <Link
+                  href="#"
+                  className="text-muted-foreground inline-block px-4 py-2 text-xs"
+                >
+                  View all notifications
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="px-4 py-2">
+              <span className="text-muted-foreground block px-4 py-2 text-sm">
+                No new notifications
+              </span>
+            </div>
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+export default AppNotificationDropdown;

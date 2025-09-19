@@ -1,21 +1,9 @@
 "use client";
 
+import { Command, LifeBuoy } from "lucide-react";
 import * as React from "react";
-import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react";
 
 import { NavMain } from "@/components/ui/nav-main";
-import { NavProjects } from "@/components/ui/nav-projects";
 import { NavSecondary } from "@/components/ui/nav-secondary";
 import { NavUser } from "@/components/ui/nav-user";
 import {
@@ -27,127 +15,105 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { SUPPORT_CIPTACODE_PHONE_NUMBER } from "@/constants";
+import { getWhatsappMessageUrl } from "@/lib/utils";
+import {
+  IconAd2,
+  IconCategory,
+  IconDatabase,
+  IconDogBowl,
+  IconShoppingCart,
+  IconUser,
+} from "@tabler/icons-react";
+import Link from "next/link";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
+      title: "Dashboard",
+      url: "/admin/dashboard",
+      icon: IconCategory,
+      items: [],
+    },
+    {
+      title: "Kelola Produk",
+      url: "/admin/kelola-produk",
+      icon: IconDogBowl,
+      items: [],
+    },
+    {
+      title: "Penjualan",
+      icon: IconShoppingCart,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Kelola Transaksi",
+          url: "/admin/kelola-transaksi",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Kelola Kupon",
+          url: "/admin/kelola-kupon",
         },
       ],
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
+      title: "Karyawan",
+      icon: IconUser,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Kelola Karyawan",
+          url: "/admin/kelola-karyawan",
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "Kelola Roles",
+          url: "/admin/kelola-roles",
         },
         {
-          title: "Quantum",
-          url: "#",
+          title: "Kelola Hak Akses",
+          url: "/admin/kelola-hak-akses",
         },
       ],
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
+      title: "Marketing",
+      icon: IconAd2,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: "Kelola Banner",
+          url: "/admin/kelola-banner",
         },
         {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "Kelola Pengumuman",
+          url: "/admin/kelola-pengumuman",
         },
       ],
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
+      title: "Master Data",
+      icon: IconDatabase,
       items: [
         {
-          title: "General",
-          url: "#",
+          title: "Kelola Kategori",
+          url: "/admin/kelola-kategori",
         },
         {
-          title: "Team",
-          url: "#",
+          title: "Kelola Sub Kategori",
+          url: "/admin/kelola-sub-kategori",
         },
         {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
+          title: "Kelola Tipe Produk",
+          url: "/admin/kelola-tipe-produk",
         },
       ],
     },
   ],
   navSecondary: [
     {
-      title: "Support",
-      url: "#",
+      title: "Support Ciptacode",
+      url: getWhatsappMessageUrl(
+        SUPPORT_CIPTACODE_PHONE_NUMBER,
+        "Halo Tim Ciptacode, saya butuh bantuan pada website Lucky Petshop.",
+      ),
       icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
     },
   ],
 };
@@ -159,22 +125,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <Link href="/admin/dashboard" prefetch>
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate font-medium">Lucky Petshop</span>
+                  <span className="truncate text-xs">Ecommerce</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
