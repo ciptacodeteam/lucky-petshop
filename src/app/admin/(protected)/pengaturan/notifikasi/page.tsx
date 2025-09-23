@@ -1,9 +1,77 @@
-const ProfilePage = () => {
+import { dummyNotification } from "@/components/ui/app-notification-dropdown";
+import AppSectionHeader from "@/components/ui/app-section-header";
+import { cn } from "@/lib/utils";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
+const NotificationPage = () => {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 p-8">
-      <h2 className="mb-4 text-2xl font-semibold">Notifikasi</h2>
-      <p className="text-gray-600">Halaman pengaturan notifikasi.</p>
-    </div>
+    <main>
+      <AppSectionHeader
+        withBorder
+        title="Notifikasi"
+        description="Kelola semua notifikasi aplikasi di sini."
+      />
+
+      <main>
+        <section>
+          <ul>
+            {dummyNotification.map((notif) => (
+              <li
+                key={notif.id}
+                className={cn(notif.read && "border-b last:border-b-0")}
+              >
+                <div
+                  className={cn(
+                    "hover:bg-muted flex cursor-pointer items-center px-4 py-4 transition",
+                    notif.read ? "bg-background" : "bg-blue-50",
+                  )}
+                >
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      {!notif.read && (
+                        <span className="bg-warning inline-block h-2 w-2 rounded-full" />
+                      )}
+                      <span className="text-sm font-medium">{notif.title}</span>
+                    </div>
+                    <p className="text-xs text-gray-600">{notif.content}</p>
+                  </div>
+                  <span className="ml-4 text-xs text-gray-400">
+                    {notif.time}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <footer className="mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious href="#" />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink href="#">1</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext href="#" />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </footer>
+        </section>
+      </main>
+    </main>
   );
 };
-export default ProfilePage;
+export default NotificationPage;

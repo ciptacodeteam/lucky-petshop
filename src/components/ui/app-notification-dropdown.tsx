@@ -9,8 +9,9 @@ import { IconBell } from "@tabler/icons-react";
 import { Badge } from "./badge";
 import { Button } from "./button";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-const notifications = [
+export const dummyNotification = [
   {
     id: 1,
     title: "New user registered",
@@ -41,7 +42,7 @@ const AppNotificationDropdown = () => {
         <Button variant="ghost" size="icon" className="relative">
           <IconBell className="!size-6" />
           <span className="sr-only">Open notifications</span>
-          {notifications.some((n) => !n.read) && (
+          {dummyNotification.some((n) => !n.read) && (
             <span
               className="absolute top-1 right-1 inline-block h-2 w-2 rounded-full bg-red-500"
               aria-label="Unread notifications"
@@ -52,25 +53,26 @@ const AppNotificationDropdown = () => {
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center gap-2 px-4 py-2 font-medium">
           Notifications
-          {notifications.some((n) => !n.read) && (
+          {dummyNotification.some((n) => !n.read) && (
             <Badge
               className="h-5 min-w-5 rounded-full px-1 font-mono font-semibold tabular-nums"
               variant="secondary"
             >
-              {notifications.filter((n) => !n.read).length}
+              {dummyNotification.filter((n) => !n.read).length}
             </Badge>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <div className="max-h-72 overflow-y-auto">
-          {notifications.length > 0 ? (
+          {dummyNotification.length > 0 ? (
             <>
-              {notifications.map((notification) => (
+              {dummyNotification.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`flex items-start gap-3 border-b px-4 py-3 transition-colors last:border-b-0 ${
-                    notification.read ? "bg-background" : "bg-accent"
-                  } hover:bg-muted cursor-pointer`}
+                  className={cn(
+                    "hover:bg-muted flex cursor-pointer items-start gap-3 border-b px-4 py-3 transition-colors last:border-b-0",
+                    notification.read ? "bg-background" : "bg-blue-50",
+                  )}
                   tabIndex={0}
                   role="button"
                   aria-label={notification.title}
