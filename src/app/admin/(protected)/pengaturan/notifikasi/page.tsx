@@ -28,7 +28,7 @@ const NotificationPage = () => {
           variant={"ghost"}
           className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
         >
-          <IconCircleCheck />
+          <IconCircleCheck className="size-5" />
           Mark all as read
         </Button>
         <section className="mt-4">
