@@ -17,7 +17,7 @@ const AppSectionHeader = ({
   return (
     <header
       className={cn(
-        "mb-6 flex items-center justify-between pb-4",
+        "mb-4 flex items-center justify-between pb-4",
         withBorder && "border-b",
         className,
       )}

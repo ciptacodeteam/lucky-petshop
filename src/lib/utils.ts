@@ -33,3 +33,7 @@ export function sendWhatsappMessage(phoneNumber: string, message: string) {
 export function getWhatsappMessageUrl(phoneNumber: string, message: string) {
   return `https://wa.me/${phoneNumber}?text=${whatsappMessageFormatter(message)}`;
 }
+
+export function formatNumber(value: number, locale = "id-ID"): string {
+  return new Intl.NumberFormat(locale).format(value);
+}
