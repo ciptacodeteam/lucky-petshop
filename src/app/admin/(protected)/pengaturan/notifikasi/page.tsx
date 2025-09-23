@@ -10,6 +10,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { IconCircleCheck } from "@tabler/icons-react";
 
 const NotificationPage = () => {
   return (
@@ -18,10 +20,18 @@ const NotificationPage = () => {
         withBorder
         title="Notifikasi"
         description="Kelola semua notifikasi aplikasi di sini."
+        className="mb-4"
       />
 
       <main>
-        <section>
+        <Button
+          variant={"ghost"}
+          className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
+        >
+          <IconCircleCheck />
+          Mark all as read
+        </Button>
+        <section className="mt-4">
           <ul>
             {dummyNotification.map((notif) => (
               <li
