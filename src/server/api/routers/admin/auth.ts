@@ -1,6 +1,10 @@
 import { auth } from "@/lib/auth";
 import { z } from "@/lib/zod";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  adminProtectedProcedure,
+  createTRPCRouter,
+  publicProcedure,
+} from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { TRPCError } from "@trpc/server";
 import { APIError, BetterAuthError } from "better-auth";
@@ -89,65 +93,6 @@ export const adminAuthRouter = createTRPCRouter({
         });
       }
     }),
-
-  // !!THIS CANNOT BE USED
-  // login: publicProcedure
-  //   .input(
-  //     z.object({
-  //       email: z.email("Email tidak valid"),
-  //       password: z.string().min(6, "Password minimal 6 karakter").max(35),
-  //       rememberMe: z.boolean().optional(),
-  //     }),
-  //   )
-  //   .mutation(async ({ input, ctx }) => {
-  //     try {
-  //       const session = await auth.api.signInEmail({
-  //         body: {
-  //           email: input.email,
-  //           password: input.password,
-  //           rememberMe: input.rememberMe,
-  //         },
-  //         headers: ctx.headers,
-  //       });
-
-  //       const user = session?.user;
-
-  //       if (!session || !user) {
-  //         throw new TRPCError({
-  //           code: "UNAUTHORIZED",
-  //           message: "Email atau password salah",
-  //         });
-  //       }
-
-  //       const userRole = await db.user.findUnique({
-  //         where: { id: user?.id },
-  //         select: { role: true },
-  //       });
-
-  //       if (userRole?.role !== "admin") {
-  //         throw new TRPCError({
-  //           code: "FORBIDDEN",
-  //           message: "Akses ditolak. Anda bukan admin.",
-  //         });
-  //       }
-
-  //       return session;
-  //     } catch (error) {
-  //       console.error("Admin login failed:", error);
-  //       if (error instanceof BetterAuthError) {
-  //         throw new TRPCError({
-  //           code: "BAD_REQUEST",
-  //           message: error.message,
-  //           cause: error,
-  //         });
-  //       }
-  //       throw new TRPCError({
-  //         code: "INTERNAL_SERVER_ERROR",
-  //         message: "Gagal masuk sebagai admin",
-  //         cause: error,
-  //       });
-  //     }
-  //   }),
 
   logout: publicProcedure.mutation(async ({ ctx }) => {
     try {
@@ -243,6 +188,50 @@ export const adminAuthRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Gagal mereset password",
+          cause: error,
+        });
+      }
+    }),
+
+  changePassword: adminProtectedProcedure
+    .input(
+      z.object({
+        oldPassword: z.string().min(6).max(32),
+        password: z.string().min(6).max(32),
+        confirmPassword: z.string().min(6).max(32),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (input.password !== input.confirmPassword) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Kata sandi dan konfirmasi kata sandi tidak sesuai",
+        });
+      }
+
+      try {
+        await auth.api.changePassword({
+          headers: ctx.headers,
+          body: {
+            currentPassword: input.oldPassword,
+            newPassword: input.password,
+          },
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.error("Change password failed:", error);
+        if (error instanceof BetterAuthError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Gagal mengganti kata sandi",
           cause: error,
         });
       }

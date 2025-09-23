@@ -11,6 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
+import { auth } from "@/lib/auth";
 
 /**
  * 1. CONTEXT
@@ -25,8 +26,14 @@ import { db } from "@/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  const session = await auth.api.getSession({
+    headers: opts.headers,
+  });
+
   return {
     db,
+    session: session?.session || null,
+    user: session?.user || null,
     ...opts,
   };
 };
@@ -96,6 +103,37 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   return result;
 });
 
+const adminAuthenticationMiddleware = t.middleware(async ({ next, ctx }) => {
+  // You can access the session object from the context
+  // If no session exists, throw an UNAUTHORIZED error
+  if (!ctx.user || ctx.user.role !== "admin") {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  return next({
+    // Optionally modify the context for downstream resolvers
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+    },
+  });
+});
+
+const userAuthenticationMiddleware = t.middleware(async ({ next, ctx }) => {
+  // You can access the session object from the context
+  // If no session exists, throw an UNAUTHORIZED error
+  if (!ctx.user) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  return next({
+    // Optionally modify the context for downstream resolvers
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+    },
+  });
+});
 /**
  * Public (unauthenticated) procedure
  *
@@ -104,3 +142,11 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+export const adminProtectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(adminAuthenticationMiddleware);
+
+export const userProtectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(userAuthenticationMiddleware);

@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
 import { z } from "@/lib/zod";
+import { apiClient } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 const formSchema = z
   .object({
@@ -36,8 +38,21 @@ const AdminChangePasswordForm = () => {
     },
   });
 
+  const { mutate, isPending } = apiClient.admin.auth.changePassword.useMutation(
+    {
+      onSuccess: () => {
+        form.reset();
+        toast.success("Password berhasil diubah");
+      },
+      onError: (error) => {
+        console.error("change password error", error);
+        toast.error(error.message || "Gagal mengubah password");
+      },
+    },
+  );
+
   const onSubmit = (data: FormSchema) => {
-    console.log("data", data);
+    mutate(data);
   };
 
   return (
@@ -97,7 +112,7 @@ const AdminChangePasswordForm = () => {
           />
         </div>
 
-        <Button type="submit" className="mt-6">
+        <Button type="submit" className="mt-6" loading={isPending}>
           Ganti Password
         </Button>
       </form>
