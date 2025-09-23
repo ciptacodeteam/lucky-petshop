@@ -5,16 +5,15 @@ import {
   createTRPCRouter,
   publicProcedure,
 } from "@/server/api/trpc";
-import { db } from "@/server/db";
 import { TRPCError } from "@trpc/server";
 import { APIError, BetterAuthError } from "better-auth";
 
 export const adminAuthRouter = createTRPCRouter({
   checkAccountExist: publicProcedure
     .output(z.object({ exists: z.boolean() }).nullable())
-    .query(async (): Promise<{ exists: boolean } | null> => {
+    .query(async ({ ctx }): Promise<{ exists: boolean } | null> => {
       try {
-        const admins = await db.user.findMany({
+        const admins = await ctx.db.user.findMany({
           where: {
             role: "admin",
           },
@@ -46,9 +45,9 @@ export const adminAuthRouter = createTRPCRouter({
         password: z.string().min(6).max(35),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
-        const existingAdmin = await db.user.findFirst({
+        const existingAdmin = await ctx.db.user.findFirst({
           where: { email: input.email, role: "admin" },
         });
 
@@ -232,6 +231,72 @@ export const adminAuthRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Gagal mengganti kata sandi",
+          cause: error,
+        });
+      }
+    }),
+
+  updateProfile: adminProtectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(2).max(50),
+        email: z.email().max(100),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const updatedUser = await auth.api.updateUser({
+          headers: ctx.headers,
+          body: {
+            name: input.name,
+          },
+        });
+
+        if (!updatedUser) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Gagal memperbarui profil",
+          });
+        }
+
+        if (ctx.user?.email !== input.email) {
+          const isEmailTaken = await ctx.db.user.findFirst({
+            where: {
+              email: input.email,
+              id: { not: ctx.user?.id },
+              role: "admin",
+            },
+          });
+
+          if (isEmailTaken) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Email sudah terdaftar",
+            });
+          }
+
+          await auth.api.changeEmail({
+            headers: ctx.headers,
+            body: {
+              newEmail: input.email,
+            },
+          });
+        }
+
+        return updatedUser;
+      } catch (error) {
+        console.error("Update profile failed:", error);
+        if (error instanceof BetterAuthError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+            cause: error,
+          });
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Gagal memperbarui profil",
           cause: error,
         });
       }
