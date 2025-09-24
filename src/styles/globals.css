@@ -52,6 +52,12 @@
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-hover: var(--hover);
+  --color-success: #22c55e;
+  --color-success-foreground: #ffffff;
+  --color-info: #3b82f6;
+  --color-info-foreground: #ffffff;
+  --color-error: #ef4444;
+  --color-error-foreground: #ffffff;
   --text-xs: 0.75rem;
 }
 
