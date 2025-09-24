@@ -1,10 +1,11 @@
 import { IconShoppingCart, IconUser } from "@tabler/icons-react";
 import GlobalSearchBar from "../search/GlobalSearchBar";
+import CartSheet from "../sheets/CartSheet";
+import MobileSidebar from "../sidebars/MobileSidebar";
+import { Badge } from "../ui/badge";
 import AppLogo from "../ui/brand-logo";
 import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
 import AnnouncementBar from "./AnnouncementBar";
-import MobileSidebar from "../sidebars/MobileSidebar";
 import CategoryBar from "./CategoryBar";
 
 type Props = {
@@ -36,16 +37,18 @@ const MainHeader = ({ withAnnouncement, withCategoryBar }: Props) => {
             >
               <IconUser />
             </Button>
-            <Button
-              variant={"ghost"}
-              size={"icon"}
-              className="relative hover:bg-inherit"
-            >
-              <Badge className="bg-accent text-accent-foreground absolute -top-0 -right-0 h-4 min-w-4 rounded-full px-1 font-mono tabular-nums">
-                1
-              </Badge>
-              <IconShoppingCart />
-            </Button>
+            <CartSheet>
+              <Button
+                variant={"ghost"}
+                size={"icon"}
+                className="relative hover:bg-inherit"
+              >
+                <Badge className="bg-accent text-accent-foreground absolute -top-0 -right-0 h-4 min-w-4 rounded-full px-1 font-mono tabular-nums">
+                  1
+                </Badge>
+                <IconShoppingCart />
+              </Button>
+            </CartSheet>
             <div className="ml-1 lg:hidden">
               <MobileSidebar />
             </div>
