@@ -5,8 +5,6 @@ import { z } from "@/lib/zod";
 export const adminProductTypeRouter = createTRPCRouter({
   getAll: adminProtectedProcedure.query(async ({ ctx }) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate a delay
-
       return await ctx.db.productType.findMany({
         orderBy: { name: "asc" },
       });
