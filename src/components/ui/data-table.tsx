@@ -38,8 +38,39 @@ import { cn } from "@/lib/utils";
 import { IconPlus } from "@tabler/icons-react";
 import { rankItem } from "@tanstack/match-sorter-utils";
 import { Loader2 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { Button } from "../ui/button";
+
+type TableLoadingProps = {
+  columns: ColumnDef<any, any>[];
+};
+
+const TableLoading = ({ columns }: TableLoadingProps) => {
+  return (
+    <TableRow>
+      <TableCell colSpan={columns.length} className="h-24 text-center">
+        <div className="mx-auto flex w-fit items-center gap-2">
+          <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+          <span className="ml-2">Loading...</span>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
+
+type TableEmptyProps = {
+  columns: ColumnDef<any, any>[];
+};
+
+const TableEmpty = ({ columns }: TableEmptyProps) => {
+  return (
+    <TableRow>
+      <TableCell colSpan={columns.length} className="h-24 text-center">
+        No results.
+      </TableCell>
+    </TableRow>
+  );
+};
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, any>[];
@@ -119,11 +150,12 @@ export function DataTable<TData>({
           value={table.getState().globalFilter || ""}
           onChange={(event) => handleSearchChange(event.target.value)}
           className="max-w-60 text-sm"
+          disabled={loading}
         />
         {withAddButton && (
-          <Button onClick={onAdd}>
-            <IconPlus />
-            Create New
+          <Button onClick={onAdd} variant={"secondary"} disabled={loading}>
+            <IconPlus className="size-5" />
+            Buat Baru
           </Button>
         )}
       </div>
@@ -181,49 +213,34 @@ export function DataTable<TData>({
             ))}
           </TableHeader>
           <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  <div className="mx-auto flex w-fit items-center gap-2">
-                    <Loader2 className="mx-auto h-6 w-6 animate-spin" />
-                    <span className="ml-2">Loading...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <TableCell
-                        key={cell.id}
-                        className={cn("py-3 ps-5 whitespace-nowrap")}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
+            <Suspense fallback={<TableLoading columns={columns} />}>
+              {loading ? (
+                <TableLoading columns={columns} />
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <TableCell
+                          key={cell.id}
+                          className={cn("py-3 ps-5 whitespace-nowrap")}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))
+              ) : (
+                <TableEmpty columns={columns} />
+              )}
+            </Suspense>
           </TableBody>
         </Table>
       </div>
@@ -233,12 +250,13 @@ export function DataTable<TData>({
             <PaginationItem
               className={cn(
                 "cursor-pointer",
-                !table.getCanPreviousPage() && "cursor-not-allowed opacity-50",
+                (!table.getCanPreviousPage() || loading) &&
+                  "cursor-not-allowed opacity-50",
               )}
             >
               <PaginationPrevious
                 onClick={() => table.previousPage()}
-                isActive={table.getCanPreviousPage()}
+                isActive={table.getCanPreviousPage() && !loading}
               />
             </PaginationItem>
             <span className="flex items-center gap-1 px-2 text-sm font-medium">
@@ -251,12 +269,13 @@ export function DataTable<TData>({
             <PaginationItem
               className={cn(
                 "cursor-pointer",
-                !table.getCanNextPage() && "cursor-not-allowed opacity-50",
+                (!table.getCanNextPage() || loading) &&
+                  "cursor-not-allowed opacity-50",
               )}
             >
               <PaginationNext
                 onClick={() => table.nextPage()}
-                isActive={table.getCanNextPage()}
+                isActive={table.getCanNextPage() && !loading}
               />
             </PaginationItem>
           </PaginationContent>
