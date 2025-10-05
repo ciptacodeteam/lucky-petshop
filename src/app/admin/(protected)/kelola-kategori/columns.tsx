@@ -1,19 +1,19 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import type { ProductType } from "@prisma/client";
+import type { Category } from "@prisma/client";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
 import { createColumnHelper } from "@tanstack/react-table";
 import dayjs from "dayjs";
 
-const colHelper = createColumnHelper<ProductType>();
+const colHelper = createColumnHelper<Category>();
 export const columns = [
   colHelper.accessor("name", {
-    header: "Nama Tipe Produk",
+    header: "Nama Kategori",
     cell: (info) => info.getValue(),
   }),
   colHelper.accessor("createdAt", {
     header: "Dibuat Pada",
-    cell: (info) => dayjs(info.getValue() as Date).format("DD MMM YYYY"),
+    cell: (info) => dayjs(info.getValue()).format("DD MMM YYYY"),
   }),
   colHelper.display({
     id: "actions",
@@ -21,10 +21,10 @@ export const columns = [
     cell: () => (
       <div className="flex items-center gap-2">
         <Button variant={"secondary"} size={"icon"}>
-          <IconPencil className="size-5" />
+          <IconPencil className="!size-4" />
         </Button>
         <Button variant={"destructive"} size={"icon"}>
-          <IconTrash className="size-5" />
+          <IconTrash className="!size-4" />
         </Button>
       </div>
     ),

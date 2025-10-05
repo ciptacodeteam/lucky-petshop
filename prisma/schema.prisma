@@ -16,6 +16,7 @@ model User {
   email         String
   emailVerified Boolean   @default(false) @map("email_verified")
   image         String?
+  phone         String?
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
   sessions      Session[]
@@ -27,9 +28,26 @@ model User {
   banExpires DateTime? @map("ban_expires")
 
   notifications Notification[]
+  carts         Cart[]
+  sales         Sales[]
+  addresses     UserAddress[]
 
   @@unique([email])
   @@map("users")
+}
+
+model UserAddress {
+  id            String          @id @default(cuid())
+  userId        String          @map("user_id")
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address       String
+  city          String
+  province      String
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @default(now()) @updatedAt @map("updated_at")
+  SalesDelivery SalesDelivery[]
+
+  @@map("user_addresses")
 }
 
 model Session {
@@ -87,32 +105,23 @@ model Category {
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   subCategories SubCategory[]
+  Product       Product[]
 
   @@map("categories")
 }
 
 model SubCategory {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   name       String
-  slug       String   @unique
-  categoryId String   @map("category_id")
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+  slug       String    @unique
+  categoryId String    @map("category_id")
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at")
+  Product    Product[]
 
   @@unique([name, categoryId])
   @@map("sub_categories")
-}
-
-model ProductType {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-
-  // products Product[]
-
-  @@map("product_types")
 }
 
 model Banner {
@@ -133,20 +142,6 @@ model Announcement {
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("announcements")
-}
-
-model DiscountCode {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  description String?
-  percentage  Float
-  active      Boolean  @default(true)
-  startDate   DateTime @default(now()) @map("start_date")
-  endDate     DateTime @map("end_date")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
-
-  @@map("discount_codes")
 }
 
 model Notification {
@@ -177,4 +172,159 @@ model AdminNotification {
   @@map("admin_notifications")
 }
 
-// TODO: PRODUCT MODEL, ORDERS, ORDER ITEMS, USER CARTS USER DISCOUNT CODES.
+model Product {
+  id            String      @id @default(cuid())
+  name          String
+  slug          String      @unique
+  description   String?
+  categoryId    String      @map("category_id")
+  subCategoryId String      @map("sub_category_id")
+  productTypeId String      @map("product_type_id")
+  category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at")
+
+  images ProductImage[]
+  carts  Cart[]
+  types  ProductType[]
+  sales  SalesItem[]
+
+  @@unique([name, subCategoryId])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  url       String
+  order     Int      @default(0)
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("product_images")
+}
+
+model ProductType {
+  id                 String   @id @default(cuid())
+  name               String   @unique
+  stock              Int      @default(0)
+  price              Int
+  normalPrice        Int?     @map("normal_price")
+  discountPercentage Int?     @map("discount_percentage")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+  productId          String   @map("product_id")
+  product            Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  salesItems SalesItem[]
+
+  @@map("product_types")
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([userId, productId])
+  @@map("carts")
+}
+
+model TransferBank {
+  id        String   @id @default(cuid())
+  name      String
+  account   String
+  owner     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  sales Sales[]
+
+  @@map("transfer_banks")
+}
+
+enum SalesStatus {
+  PENDING
+  PROCESSING
+  SHIPPING
+  COMPLETED
+  CANCELLED
+}
+
+// BELI/BAYAR > KONFIRMASI BUKTI WA > ADMIN CEK ID TRANSAKSI > ADMIN APPROVE/CANCEL TRANSAKSI > JIKA APPROVE MAKA STATUS JADI PROCESSING > JIKA CANCEL MAKA STATUS JADI CANCELLED > JIKA PROCESSING MAKA ADMIN KIRIM BARANG > JIKA BARANG DIKIRIM MAKA STATUS JADI SHIPPING > JIKA BARANG DITERIMA PELANGGAN MAKA STATUS JADI COMPLETED
+
+// BELI > KONFIRMASI WA > ADMIN CEK ID TRANSAKSI > ADMIN PROSES > CEK ONGKIR > ADMIN REQUEST BAYAR > SHIPPING > COMPLETED
+
+model Sales {
+  id               String      @id @default(cuid())
+  total            Int
+  totalNormalPrice Int?        @map("total_normal_price")
+  status           SalesStatus @default(PENDING)
+  userId           String      @map("user_id")
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @default(now()) @updatedAt @map("updated_at")
+
+  items          SalesItem[]
+  TransferBank   TransferBank?   @relation(fields: [transferBankId], references: [id])
+  transferBankId String?
+  delivery       SalesDelivery[]
+
+  @@map("sales")
+}
+
+enum DeliveryVendor {
+  JNE
+  POS_INDONESIA
+  TIKI
+  SICEPAT
+  JNT
+  WAHANA
+  NINJA_EXPRESS
+  ANTERAJA
+  SAP
+  ID_EXPRESS
+  GRAB_EXPRESS
+  GO_SEND
+}
+
+model SalesDelivery {
+  id            String         @id @default(cuid())
+  salesId       String         @map("sales_id")
+  trackingNo    String         @map("tracking_no")
+  vendor        DeliveryVendor
+  userAddressId String         @map("user_address_id")
+  userAddress   UserAddress    @relation(fields: [userAddressId], references: [id], onDelete: Cascade)
+  deliveryFee   Int            @map("delivery_fee")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at")
+  sales         Sales          @relation(fields: [salesId], references: [id], onDelete: Cascade)
+
+  @@map("sales_delivery")
+}
+
+model SalesItem {
+  id                 String      @id @default(cuid())
+  saleId             String      @map("sale_id")
+  productId          String      @map("product_id")
+  productTypeId      String      @map("product_type_id")
+  quantity           Int         @default(1)
+  price              Int         @default(0)
+  normalPrice        Int?        @default(0) @map("normal_price")
+  discountPercentage Int?        @default(0) @map("discount_percentage")
+  priceAfterDiscount Int         @default(0) @map("price_after_discount")
+  sale               Sales       @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product            Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productType        ProductType @relation(fields: [productTypeId], references: [id], onDelete: Cascade)
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @default(now()) @updatedAt @map("updated_at")
+
+  @@map("sales_items")
+}

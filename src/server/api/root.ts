@@ -1,7 +1,6 @@
 import { adminAuthRouter } from "@/server/api/routers/admin/auth";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { adminCategoryRouter } from "./routers/admin/category";
-import { adminProductTypeRouter } from "./routers/admin/productType";
 import { adminSubCategoryRouter } from "./routers/admin/subCategory";
 import { adminAnnouncementRouter } from "./routers/admin/announcement";
 
@@ -17,7 +16,6 @@ const adminRoutes = {
     auth: adminAuthRouter,
     category: adminCategoryRouter,
     subCategory: adminSubCategoryRouter,
-    productType: adminProductTypeRouter,
     announcement: adminAnnouncementRouter,
   },
 };

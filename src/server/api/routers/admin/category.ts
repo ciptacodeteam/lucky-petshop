@@ -6,13 +6,15 @@ import slugify from "slugify";
 export const adminCategoryRouter = createTRPCRouter({
   getAll: adminProtectedProcedure
     .input(
-      z.object({
-        includeSubCategories: z.boolean().optional().default(false),
-      }),
+      z
+        .object({
+          includeSubCategories: z.boolean().optional().default(false),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       try {
-        const { includeSubCategories } = input;
+        const { includeSubCategories } = input || {};
         return await ctx.db.category.findMany({
           include: includeSubCategories ? { subCategories: true } : undefined,
           orderBy: { name: "asc" },
@@ -57,13 +59,14 @@ export const adminCategoryRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(2).max(50),
+        slug: z.string().optional(),
         subCategories: z.array(z.string()).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       try {
         const existingCategory = await ctx.db.category.findFirst({
-          where: { name: input.name },
+          where: { OR: [{ name: input.name }, { slug: input.slug }] },
         });
 
         if (existingCategory) {
@@ -96,11 +99,16 @@ export const adminCategoryRouter = createTRPCRouter({
           );
         }
 
+        let slug = input.slug;
+        if (!slug) {
+          slug = slugify(input.name, { lower: true, strict: true });
+        }
+
         // Create the category first
         const category = await ctx.db.category.create({
           data: {
             name: input.name,
-            slug: slugify(input.name, { lower: true, strict: true }),
+            slug: slug,
           },
         });
 

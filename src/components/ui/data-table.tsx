@@ -28,18 +28,27 @@ import {
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
+  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { IconPlus } from "@tabler/icons-react";
 import { rankItem } from "@tanstack/match-sorter-utils";
 import { Loader2 } from "lucide-react";
 import { Suspense, useCallback, useMemo, useState } from "react";
-import { Button } from "../ui/button";
+import { Label } from "./label";
 
 type TableLoadingProps = {
   columns: ColumnDef<any, any>[];
@@ -66,7 +75,7 @@ const TableEmpty = ({ columns }: TableEmptyProps) => {
   return (
     <TableRow>
       <TableCell colSpan={columns.length} className="h-24 text-center">
-        No results.
+        Tidak ada data.
       </TableCell>
     </TableRow>
   );
@@ -77,15 +86,20 @@ interface DataTableProps<TData> {
   data: TData[];
   loading?: boolean;
   withAddButton?: boolean;
+  withSearch?: boolean;
   onAdd?: () => void;
+  children?: React.ReactNode;
+  addButton?: React.ReactNode;
 }
 
 export function DataTable<TData>({
   columns,
   data,
   loading,
-  withAddButton = false,
+  addButton,
+  withSearch = true,
   onAdd,
+  children,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -98,7 +112,7 @@ export function DataTable<TData>({
   const fuzzyFilter = useCallback<FilterFn<RowData>>(
     (row, columnId, value, addMeta) => {
       // Rank the item
-      const itemRank = rankItem(row.getValue(columnId), value);
+      const itemRank = rankItem(row.getValue(columnId), value as string);
 
       // Store the itemRank info
       addMeta({ itemRank });
@@ -108,14 +122,6 @@ export function DataTable<TData>({
     },
     [],
   );
-
-  const handleSearchChange = useCallback((value: string) => {
-    if (value) {
-      table.setGlobalFilter(value);
-    } else {
-      table.setGlobalFilter(undefined);
-    }
-  }, []);
 
   const fallbackData = useMemo(() => data || [], [data]);
 
@@ -142,23 +148,33 @@ export function DataTable<TData>({
     },
   });
 
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (value) {
+        table.setGlobalFilter(value);
+      } else {
+        table.setGlobalFilter(undefined);
+      }
+    },
+    [table],
+  );
+
   return (
     <div>
       <div className="flex items-center gap-4 py-4">
-        <Input
-          placeholder="Search..."
-          value={table.getState().globalFilter || ""}
-          onChange={(event) => handleSearchChange(event.target.value)}
-          className="max-w-60 text-sm"
-          disabled={loading}
-        />
-        {withAddButton && (
-          <Button onClick={onAdd} variant={"secondary"} disabled={loading}>
-            <IconPlus className="size-5" />
-            Buat Baru
-          </Button>
+        {withSearch && (
+          <Input
+            placeholder="Search..."
+            value={table.getState().globalFilter || ""}
+            onChange={(event) => handleSearchChange(event.target.value)}
+            className="max-w-60 text-sm"
+            disabled={loading}
+          />
         )}
+        {addButton}
       </div>
+
+      {children && <div className="py-2">{children}</div>}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -185,7 +201,7 @@ export function DataTable<TData>({
                         )}
                         style={{ width: meta?.width || "auto" }}
                       >
-                        <span className="mr-2">
+                        <span className="mr-8">
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -244,43 +260,162 @@ export function DataTable<TData>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 pt-4">
-        <Pagination>
-          <PaginationContent className="ml-auto w-fit">
-            <PaginationItem
-              className={cn(
-                "cursor-pointer",
-                (!table.getCanPreviousPage() || loading) &&
-                  "cursor-not-allowed opacity-50",
-              )}
+      <footer className="flex flex-wrap items-center justify-between gap-2 pt-4">
+        <div className="flex items-center space-x-2 text-sm">
+          <div className="flex items-center">
+            <Label
+              htmlFor="page-size"
+              className="text-muted-foreground mr-2 text-sm"
             >
-              <PaginationPrevious
-                onClick={() => table.previousPage()}
-                isActive={table.getCanPreviousPage() && !loading}
-              />
-            </PaginationItem>
-            <span className="flex items-center gap-1 px-2 text-sm font-medium">
-              Page{" "}
-              <span className="font-medium">
-                {table.getState().pagination.pageIndex + 1}
-              </span>{" "}
-              of <span className="font-medium">{table.getPageCount()}</span>
-            </span>
-            <PaginationItem
-              className={cn(
-                "cursor-pointer",
-                (!table.getCanNextPage() || loading) &&
-                  "cursor-not-allowed opacity-50",
-              )}
+              Rows per page:
+            </Label>
+            <Select
+              onValueChange={(value) => {
+                table.setPageSize(Number(value));
+              }}
+              defaultValue={table.getState().pagination.pageSize.toString()}
             >
-              <PaginationNext
-                onClick={() => table.nextPage()}
-                isActive={table.getCanNextPage() && !loading}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder="Page Size" />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 20, 30, 40, 50].map((pageSize) => (
+                  <SelectItem key={pageSize} value={pageSize.toString()}>
+                    {pageSize}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="mt-4 flex w-full items-center justify-center space-x-2 lg:mt-0 lg:w-fit lg:justify-end">
+          <Pagination>
+            <PaginationContent className="mx-auto lg:mx-0 lg:ml-auto lg:w-fit">
+              <PaginationItem
+                className={cn(
+                  "cursor-pointer",
+                  (!table.getCanPreviousPage() || loading) &&
+                    "cursor-not-allowed opacity-50",
+                )}
+              >
+                <PaginationPrevious
+                  onClick={() => table.previousPage()}
+                  isActive={table.getCanPreviousPage() && !loading}
+                />
+              </PaginationItem>
+              {table.getPageCount() > 0 ? (
+                (() => {
+                  const currentPage = table.getState().pagination.pageIndex;
+                  const totalPages = table.getPageCount();
+                  const pages: (number | "ellipsis-left" | "ellipsis-right")[] =
+                    [];
+
+                  // Always show first page
+                  pages.push(0);
+
+                  // Show ellipsis if currentPage > 2
+                  if (currentPage > 2) {
+                    pages.push("ellipsis-left");
+                  }
+
+                  // Show previous, current, next (if in range)
+                  for (
+                    let i = Math.max(1, currentPage - 1);
+                    i <= Math.min(totalPages - 2, currentPage + 1);
+                    i++
+                  ) {
+                    pages.push(i);
+                  }
+
+                  // Show ellipsis if currentPage < totalPages - 3
+                  if (currentPage < totalPages - 3) {
+                    pages.push("ellipsis-right");
+                  }
+
+                  // Always show last page if more than one page
+                  if (totalPages > 1) {
+                    pages.push(totalPages - 1);
+                  }
+
+                  // Remove duplicates and sort
+                  const uniquePages = Array.from(new Set(pages)).filter(
+                    (p) =>
+                      p === "ellipsis-left" ||
+                      p === "ellipsis-right" ||
+                      (typeof p === "number" && p >= 0 && p < totalPages),
+                  );
+
+                  return uniquePages.map((page, idx) => {
+                    if (page === "ellipsis-left") {
+                      return (
+                        <PaginationItem key={`ellipsis-left-${idx}`}>
+                          <PaginationEllipsis
+                            onClick={() =>
+                              table.setPageIndex(Math.max(currentPage - 2, 0))
+                            }
+                            className="cursor-pointer"
+                          />
+                        </PaginationItem>
+                      );
+                    }
+                    if (page === "ellipsis-right") {
+                      return (
+                        <PaginationItem key={`ellipsis-right-${idx}`}>
+                          <PaginationEllipsis
+                            onClick={() =>
+                              table.setPageIndex(
+                                Math.min(currentPage + 2, totalPages - 1),
+                              )
+                            }
+                            className="cursor-pointer"
+                          />
+                        </PaginationItem>
+                      );
+                    }
+                    if (typeof page === "number") {
+                      return (
+                        <PaginationItem
+                          key={page}
+                          className={cn(
+                            "cursor-pointer",
+                            currentPage === page && "rounded",
+                          )}
+                        >
+                          <PaginationLink
+                            isActive={currentPage === page}
+                            onClick={() => table.setPageIndex(page)}
+                          >
+                            {page + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
+                  });
+                })()
+              ) : (
+                <div className="flex items-center gap-1 px-2 text-sm font-medium">
+                  No results
+                </div>
+              )}
+
+              <PaginationItem
+                className={cn(
+                  "cursor-pointer",
+                  (!table.getCanNextPage() || loading) &&
+                    "cursor-not-allowed opacity-50",
+                )}
+              >
+                <PaginationNext
+                  onClick={() => table.nextPage()}
+                  isActive={table.getCanNextPage() && !loading}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      </footer>
     </div>
   );
 }
