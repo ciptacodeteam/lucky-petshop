@@ -1,7 +1,10 @@
 "use client";
+import { DeleteCategoryButton } from "@/components/forms/categories/DeleteCategoryButton";
+import EditCategoryForm from "@/components/forms/categories/EditCategoryForm";
+import Modal from "@/components/modals/Modal";
 import { Button } from "@/components/ui/button";
 import type { Category } from "@prisma/client";
-import { IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconPencil } from "@tabler/icons-react";
 import { createColumnHelper } from "@tanstack/react-table";
 import dayjs from "dayjs";
 
@@ -18,14 +21,20 @@ export const columns = [
   colHelper.display({
     id: "actions",
     header: "Aksi",
-    cell: () => (
+    cell: (info) => (
       <div className="flex items-center gap-2">
-        <Button variant={"secondary"} size={"icon"}>
-          <IconPencil className="!size-4" />
-        </Button>
-        <Button variant={"destructive"} size={"icon"}>
-          <IconTrash className="!size-4" />
-        </Button>
+        <Modal
+          triggerChildren={
+            <Button variant={"secondary"} size={"icon"}>
+              <IconPencil className="!size-4" />
+            </Button>
+          }
+          title="Edit Sub Kategori"
+          description="Form untuk mengedit sub kategori"
+        >
+          <EditCategoryForm id={info.row.original.id} />
+        </Modal>
+        <DeleteCategoryButton id={info.row.original.id} />
       </div>
     ),
   }),

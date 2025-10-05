@@ -144,6 +144,7 @@ export const adminCategoryRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         name: z.string().min(2).max(50),
+        slug: z.string().optional(),
         subCategories: z.array(z.string()).optional(),
       }),
     )
@@ -159,8 +160,16 @@ export const adminCategoryRouter = createTRPCRouter({
           });
         }
 
+        let slug = input.slug;
+        if (!slug) {
+          slug = slugify(input.name, { lower: true, strict: true });
+        }
+
         const existingCategory = await ctx.db.category.findFirst({
-          where: { name: input.name, NOT: { id: input.id } },
+          where: {
+            OR: [{ name: input.name }, { slug: slug }],
+            NOT: { id: input.id },
+          },
         });
 
         if (existingCategory) {
@@ -175,7 +184,7 @@ export const adminCategoryRouter = createTRPCRouter({
           where: { id: input.id },
           data: {
             name: input.name,
-            slug: slugify(input.name, { lower: true, strict: true }),
+            slug: slug,
           },
         });
 

@@ -278,6 +278,15 @@ interface MultiSelectProps
    * Optional, defaults to false.
    */
   closeOnSelect?: boolean;
+
+  /**
+   * If true, shows a loading spinner instead of options.
+   *  Optional, defaults to false.
+   * When true, disables interaction with the component.
+   * Useful for async data loading scenarios.
+   * Optional, defaults to false.
+   */
+  loading?: boolean;
 }
 
 /**
@@ -333,6 +342,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
       deduplicateOptions = false,
       resetOnDefaultValueChange = true,
       closeOnSelect = false,
+      loading = false,
       ...props
     },
     ref,
@@ -821,6 +831,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                 ...widthConstraints,
                 maxWidth: `min(${widthConstraints.maxWidth}, 100%)`,
               }}
+              loading={loading}
             >
               {selectedValues.length > 0 ? (
                 <div className="flex w-full items-center justify-between">
@@ -885,7 +896,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                             {IconComponent && !responsiveSettings.hideIcons && (
                               <IconComponent
                                 className={cn(
-                                  "mr-2 h-4 w-4",
+                                  "mr-2 !size-4",
                                   responsiveSettings.compactMode &&
                                     "mr-1 h-3 w-3",
                                   customStyle?.iconColor && "text-current",
@@ -920,13 +931,12 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                                 }
                               }}
                               aria-label={`Remove ${option.label} from selection`}
-                              className="-m-0.5 ml-2 h-4 w-4 cursor-pointer rounded-sm p-0.5 hover:bg-white/20 focus:ring-1 focus:ring-white/50 focus:outline-none"
+                              className="-m-0.5 ml-1 !size-4 cursor-pointer rounded-sm p-0.5 hover:bg-white/20 focus:ring-1 focus:ring-white/50 focus:outline-none"
                             >
                               <XCircle
                                 className={cn(
-                                  "h-3 w-3",
-                                  responsiveSettings.compactMode &&
-                                    "h-2.5 w-2.5",
+                                  "size-3",
+                                  responsiveSettings.compactMode && "size-2.5",
                                 )}
                               />
                             </div>
@@ -957,7 +967,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                         } more`}
                         <XCircle
                           className={cn(
-                            "ml-2 h-4 w-4 cursor-pointer",
+                            "ml-2 !size-4 cursor-pointer",
                             responsiveSettings.compactMode && "ml-1 h-3 w-3",
                           )}
                           onClick={(event) => {
@@ -984,9 +994,9 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                         }
                       }}
                       aria-label={`Clear all ${selectedValues.length} selected options`}
-                      className="text-muted-foreground hover:text-foreground focus:ring-ring mx-2 flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm focus:ring-2 focus:ring-offset-1 focus:outline-none"
+                      className="text-muted-foreground hover:text-foreground focus:ring-ring mx-2 flex !size-4 cursor-pointer items-center justify-center rounded-sm focus:ring-2 focus:ring-offset-1 focus:outline-none"
                     >
-                      <XIcon className="h-4 w-4" />
+                      <XIcon className="!size-4" />
                     </div>
                     <Separator
                       orientation="vertical"
@@ -1121,18 +1131,18 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                           >
                             <div
                               className={cn(
-                                "border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
+                                "border-primary mr-2 flex !size-4 items-center justify-center rounded-sm border",
                                 isSelected
                                   ? "bg-primary text-primary-foreground"
                                   : "opacity-50 [&_svg]:invisible",
                               )}
                               aria-hidden="true"
                             >
-                              <CheckIcon className="h-4 w-4" />
+                              <CheckIcon className="!size-4" />
                             </div>
                             {option.icon && (
                               <option.icon
-                                className="text-muted-foreground mr-2 h-4 w-4"
+                                className="text-muted-foreground mr-2 !size-4"
                                 aria-hidden="true"
                               />
                             )}
@@ -1164,18 +1174,18 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                         >
                           <div
                             className={cn(
-                              "border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border",
+                              "border-primary mr-2 flex !size-4 items-center justify-center rounded-sm border",
                               isSelected
                                 ? "bg-primary text-primary-foreground"
                                 : "opacity-50 [&_svg]:invisible",
                             )}
                             aria-hidden="true"
                           >
-                            <CheckIcon className="h-4 w-4" />
+                            <CheckIcon className="!size-4" />
                           </div>
                           {option.icon && (
                             <option.icon
-                              className="text-muted-foreground mr-2 h-4 w-4"
+                              className="text-muted-foreground mr-2 !size-4"
                               aria-hidden="true"
                             />
                           )}
