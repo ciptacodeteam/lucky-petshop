@@ -1,5 +1,6 @@
 "use client";
 
+import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog";
 import { Toaster } from "sonner";
 
 type Props = {
@@ -9,8 +10,10 @@ type Props = {
 const MainProvider = ({ children }: Props) => {
   return (
     <>
-      {children}
-      <Toaster position="top-center" richColors />
+      <ConfirmDialogProvider>
+        {children}
+        <Toaster position="top-center" richColors />
+      </ConfirmDialogProvider>
     </>
   );
 };

@@ -10,19 +10,36 @@ import {
 } from "@/components/ui/dialog";
 
 import AddButton from "../ui/add-button";
+import { cn } from "@/lib/utils";
 
 type Props = {
   title?: string;
   description?: string;
   children: React.ReactNode;
   triggerChildren?: React.ReactNode;
+  size?: "sm" | "md" | "lg";
+  className?: string;
 };
 
-const Modal = ({ title, description, children, triggerChildren }: Props) => {
+const Modal = ({
+  title,
+  description,
+  children,
+  triggerChildren,
+  size,
+  className,
+}: Props) => {
+  const sizes = {
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-3xl",
+  };
+  const dialogSize = size ? sizes[size] : sizes.md;
+
   return (
     <Dialog>
       <DialogTrigger asChild>{triggerChildren || <AddButton />}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className={cn("w-[450px]", dialogSize, className)}>
         <DialogHeader>
           {title && <DialogTitle>{title}</DialogTitle>}
           {description && <DialogDescription>{description}</DialogDescription>}
