@@ -32,7 +32,7 @@ export const adminCategoryRouter = createTRPCRouter({
     }),
 
   getById: adminProtectedProcedure
-    .input(z.uuid())
+    .input(z.string())
     .query(async ({ ctx, input }) => {
       try {
         const category = await ctx.db.category.findUnique({
@@ -142,7 +142,7 @@ export const adminCategoryRouter = createTRPCRouter({
   update: adminProtectedProcedure
     .input(
       z.object({
-        id: z.uuid(),
+        id: z.string(),
         name: z.string().min(2).max(50),
         subCategories: z.array(z.string()).optional(),
       }),
@@ -222,7 +222,7 @@ export const adminCategoryRouter = createTRPCRouter({
     }),
 
   delete: adminProtectedProcedure
-    .input(z.uuid())
+    .input(z.string())
     .mutation(async ({ ctx, input }) => {
       try {
         const category = await ctx.db.category.findUnique({
