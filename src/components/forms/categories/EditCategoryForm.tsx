@@ -11,11 +11,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { MultiSelect } from "@/components/ui/multi-select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { z } from "@/lib/zod";
 import { apiClient } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import _ from "lodash";
+import { CopyIcon } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
@@ -68,13 +80,13 @@ const EditCategoryForm = ({ id, onDone }: EditCategoryFormProps) => {
 
   // inject default values setelah detail masuk
   useEffect(() => {
-    if (!detail) return;
+    if (!detail || !subCategories) return;
     form.reset({
       name: detail.name ?? "",
       slug: detail.slug ?? "",
       subCategories: detail.subCategories?.map((sub) => sub.id) ?? [],
     });
-  }, [detail, form]);
+  }, [subCategories, detail, form]);
 
   /**
    * 3) Mutations
@@ -87,8 +99,8 @@ const EditCategoryForm = ({ id, onDone }: EditCategoryFormProps) => {
       onSuccess: async () => {
         // invalidate/refetch list & detail
         await Promise.allSettled([
-          utils.admin.category.getAll.invalidate(),
-          utils.admin.category.getById.invalidate(id),
+          utils.admin.category.getAll.refetch(),
+          utils.admin.category.getById.refetch(id),
         ]);
         toast.success("Kategori berhasil diperbarui");
         closeRef.current?.click();
@@ -198,16 +210,40 @@ const EditCategoryForm = ({ id, onDone }: EditCategoryFormProps) => {
               <FormItem>
                 <FormLabel>Slug</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Masukkan slug Kategori"
-                    {...field}
-                    value={field.value || ""}
-                    disabled={isLoadingDetail || isUpdating}
-                    onChange={(e) => {
-                      slugDirtyRef.current = true; // tandai manual edit
-                      field.onChange(e);
-                    }}
-                  />
+                  <InputGroup>
+                    <InputGroupInput
+                      placeholder="Masukkan slug Kategori"
+                      {...field}
+                      value={field.value || ""}
+                      disabled={isLoadingDetail || isUpdating}
+                      onChange={(e) => {
+                        slugDirtyRef.current = true; // tandai manual edit
+                        field.onChange(e);
+                      }}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InputGroupButton
+                            variant="ghost"
+                            aria-label="Info"
+                            size="icon-xs"
+                            onClick={() => {
+                              if (field.value) {
+                                navigator.clipboard.writeText(field.value);
+                                toast.success("Slug disalin ke clipboard");
+                              }
+                            }}
+                          >
+                            <CopyIcon className="size-4" />
+                          </InputGroupButton>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <span>Salin</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </InputGroupAddon>
+                  </InputGroup>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -228,7 +264,7 @@ const EditCategoryForm = ({ id, onDone }: EditCategoryFormProps) => {
                       value: cat.id,
                     })) || []
                   }
-                  value={field.value ?? undefined}
+                  defaultValue={field.value || undefined}
                   onValueChange={(v) => field.onChange(v ?? null)}
                   placeholder="Pilih Sub Kategori"
                   disabled={isLoadingDetail || isUpdating}

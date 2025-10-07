@@ -9,7 +9,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import dayjs from "dayjs";
 
 const colHelper = createColumnHelper<SubCategory>();
-export const columns = [
+export const subCategoryColumn = [
   colHelper.accessor("id", {
     header: "No",
     meta: {

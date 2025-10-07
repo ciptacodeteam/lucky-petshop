@@ -1,7 +1,7 @@
 import { z } from "@/lib/zod";
-import { adminProtectedProcedure, createTRPCRouter } from "../../trpc";
 import { TRPCError } from "@trpc/server";
 import slugify from "slugify";
+import { adminProtectedProcedure, createTRPCRouter } from "../../trpc";
 
 export const adminCategoryRouter = createTRPCRouter({
   getAll: adminProtectedProcedure
@@ -149,85 +149,73 @@ export const adminCategoryRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      try {
-        const category = await ctx.db.category.findUnique({
-          where: { id: input.id },
-        });
-        if (!category) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Kategori tidak ditemukan",
+      return ctx.db
+        .$transaction(async (tx) => {
+          const category = await tx.category.findUnique({
+            where: { id: input.id },
           });
-        }
+          if (!category)
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Kategori tidak ditemukan",
+            });
 
-        let slug = input.slug;
-        if (!slug) {
-          slug = slugify(input.name, { lower: true, strict: true });
-        }
+          let slug =
+            input.slug ?? slugify(input.name, { lower: true, strict: true });
+          if (slug !== category.slug) {
+            let suffix = 1;
+            const base = slug;
+            while (
+              await tx.category.findFirst({
+                where: { slug, NOT: { id: input.id } },
+                select: { id: true },
+              })
+            ) {
+              suffix += 1;
+              slug = `${base}-${suffix}`;
+            }
+          }
 
-        const existingCategory = await ctx.db.category.findFirst({
-          where: {
-            OR: [{ name: input.name }, { slug: slug }],
-            NOT: { id: input.id },
-          },
-        });
+          // Normalize names (trim + lower for matching)
+          const rawIds = [
+            ...new Set(
+              input.subCategories?.map((n) => n.trim()).filter(Boolean),
+            ),
+          ];
 
-        if (existingCategory) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Nama kategori sudah ada",
-          });
-        }
-
-        // Update the category name and slug
-        const updatedCategory = await ctx.db.category.update({
-          where: { id: input.id },
-          data: {
-            name: input.name,
-            slug: slug,
-          },
-        });
-
-        // If subCategories are provided, handle them
-        if (input.subCategories) {
-          // Fetch existing subcategories for this category
-          const existingSubCategories = await ctx.db.subCategory.findMany({
-            where: { categoryId: input.id },
-            select: { name: true },
+          // Find existing by name (case-insensitive)
+          const existing = await tx.subCategory.findMany({
+            where: { id: { in: rawIds, mode: "insensitive" } },
+            select: { id: true, name: true },
           });
 
-          const existingNames = new Set(
-            existingSubCategories.map((sc) => sc.name.toLowerCase()),
-          );
-          // Filter out subCategories that already exist (case-insensitive)
-          const uniqueSubCategories = input.subCategories.filter(
-            (name) => !existingNames.has(name.toLowerCase()),
-          );
-
-          // Create unique subcategories and connect them to the category
-          if (uniqueSubCategories.length) {
-            await ctx.db.subCategory.createMany({
-              data: uniqueSubCategories.map((name) => ({
-                name,
-                slug: slugify(name, { lower: true, strict: true }),
-                categoryId: input.id,
-              })),
-              skipDuplicates: true,
+          if (existing.length !== rawIds.length) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Beberapa nama sub kategori tidak ditemukan",
             });
           }
-        }
 
-        return updatedCategory;
-      } catch (error) {
-        console.error("Update category failed:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Gagal memperbarui kategori",
+          // Replace all links with `set`
+          return tx.category.update({
+            where: { id: input.id },
+            data: {
+              name: input.name,
+              slug,
+              subCategories: { set: existing.map((a) => ({ id: a.id })) },
+            },
+            include: { subCategories: true },
+          });
+        })
+        .catch((err) => {
+          // If unique constraints still race, P2002 bubbles here
+          console.error("Update category failed:", err);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              err instanceof Error ? err.message : "Gagal memperbarui kategori",
+          });
         });
-      }
     }),
 
   delete: adminProtectedProcedure
@@ -245,14 +233,15 @@ export const adminCategoryRouter = createTRPCRouter({
           });
         }
 
-        await Promise.all([
-          ctx.db.subCategory.deleteMany({
-            where: { categoryId: input },
-          }),
-          ctx.db.category.delete({
+        await ctx.db.$transaction(async (tx) => {
+          await tx.subCategory.deleteMany({
+            where: { category: { some: { id: input } } },
+          });
+
+          await tx.category.delete({
             where: { id: input },
-          }),
-        ]);
+          });
+        });
 
         return { success: true };
       } catch (error) {

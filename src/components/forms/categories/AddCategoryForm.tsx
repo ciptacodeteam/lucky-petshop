@@ -11,12 +11,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { MultiSelect } from "@/components/ui/multi-select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { z } from "@/lib/zod";
 import { apiClient } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import _ from "lodash";
-import { useEffect } from "react";
+import { CopyIcon } from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
 import { toast } from "sonner";
@@ -42,10 +54,14 @@ const AddCategoryForm = () => {
     },
   });
 
-  const { data: subCategories } = apiClient.admin.subCategory.getAll.useQuery();
+  const { data: subCategories, isPending: isSubCategoryPending } =
+    apiClient.admin.subCategory.getAll.useQuery();
+
+  const utils = apiClient.useUtils();
 
   const { mutate, isPending } = apiClient.admin.category.create.useMutation({
     onSuccess: () => {
+      utils.admin.category.getAll.refetch();
       toast.success("Kategori berhasil ditambahkan");
     },
     onError: (err) => {
@@ -67,19 +83,40 @@ const AddCategoryForm = () => {
   };
 
   const watchName = form.watch("name");
-  const updateSlug = _.debounce((name) => {
-    const slug = slugify(name as string, { lower: true, strict: true });
-    form.setValue("slug", slug || "");
-  }, 500);
+  const slugDirtyRef = useRef(false); // menandai user pernah edit slug
 
   useEffect(() => {
-    // Only update the global state if both fields are filled out
-    if (watchName) {
-      updateSlug(watchName);
-    } else {
-      form.setValue("slug", "");
+    const sub = form.watch((_all, { name, type }) => {
+      if (name === "slug" && type === "change") {
+        slugDirtyRef.current = true;
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [form]);
+
+  const updateSlug = useMemo(
+    () =>
+      _.debounce((name: string) => {
+        // hanya auto-generate bila slug belum pernah disentuh user
+        if (slugDirtyRef.current) return;
+        const next = slugify(name ?? "", { lower: true, strict: true });
+        form.setValue("slug", next || "", {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }, 400),
+    [form],
+  );
+
+  useEffect(() => {
+    if (typeof watchName === "string") {
+      if (watchName.trim().length) {
+        updateSlug(watchName);
+      } else if (!slugDirtyRef.current) {
+        form.setValue("slug", "", { shouldDirty: true, shouldValidate: true });
+      }
     }
-  }, [watchName]);
+  }, [watchName, form, updateSlug]);
 
   return (
     <Form {...form}>
@@ -105,7 +142,39 @@ const AddCategoryForm = () => {
               <FormItem>
                 <FormLabel>Slug</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan slug kategori" {...field} />
+                  <InputGroup>
+                    <InputGroupInput
+                      placeholder="Masukkan slug sub Kategori"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        slugDirtyRef.current = true; // tandai manual edit
+                        field.onChange(e);
+                      }}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InputGroupButton
+                            variant="ghost"
+                            aria-label="Info"
+                            size="icon-xs"
+                            onClick={() => {
+                              if (field.value) {
+                                navigator.clipboard.writeText(field.value);
+                                toast.success("Slug disalin ke clipboard");
+                              }
+                            }}
+                          >
+                            <CopyIcon className="size-4" />
+                          </InputGroupButton>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <span>Salin</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </InputGroupAddon>
+                  </InputGroup>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -125,6 +194,7 @@ const AddCategoryForm = () => {
                       value: sub.id,
                     })) || []
                   }
+                  loading={isSubCategoryPending}
                   value={field.value}
                   onValueChange={field.onChange}
                   searchable={true}
@@ -147,7 +217,10 @@ const AddCategoryForm = () => {
               type="button"
               variant="ghost"
               className="mr-3"
-              onClick={() => form.reset()}
+              onClick={() => {
+                form.reset();
+                slugDirtyRef.current = false;
+              }}
             >
               Batal
             </Button>

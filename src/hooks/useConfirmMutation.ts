@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback } from "react";
-import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { apiClient } from "@/trpc/react"; // sesuaikan path-mu
+import { useCallback } from "react";
+import { toast } from "sonner";
 
 type ToastMsg<T> = string | ((data: T) => string);
 type ConfirmMutationOptions<TVars, TResult> = {
@@ -61,8 +61,8 @@ export function useConfirmMutation<TVars, TResult>(
           error: (e) => (typeof error === "function" ? error(e) : error),
         });
 
-        if (opts?.invalidate) await opts.invalidate(utils);
-        if (opts?.refetch) await opts.refetch(utils);
+        if (opts?.invalidate) opts.invalidate(utils);
+        if (opts?.refetch) opts.refetch(utils);
 
         return result;
       } catch (e) {

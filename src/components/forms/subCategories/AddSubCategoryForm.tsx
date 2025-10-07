@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
 import { DialogClose } from "@/components/ui/dialog";
 import {
   Form,
@@ -12,11 +11,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { z } from "@/lib/zod";
 import { apiClient } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import _ from "lodash";
-import { useEffect, useRef } from "react";
+import { CopyIcon } from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
 import { toast } from "sonner";
@@ -27,7 +38,6 @@ const formSchema = z.object({
     .min(2, "Nama sub Kategori minimal 2 karakter")
     .max(50, "Nama sub Kategori maksimal 50 karakter"),
   slug: z.string().optional(),
-  categoryId: z.string().optional(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -37,20 +47,16 @@ const AddSubCategoryForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      categoryId: undefined,
       slug: "",
     },
   });
-
-  const { data: categories, isPending: isLoadingCategories } =
-    apiClient.admin.category.getAll.useQuery();
 
   const utils = apiClient.useUtils();
   const closeRef = useRef<HTMLButtonElement>(null);
 
   const { mutate, isPending } = apiClient.admin.subCategory.create.useMutation({
-    onSuccess: async () => {
-      await utils.admin.subCategory.getAll.refetch();
+    onSuccess: () => {
+      utils.admin.subCategory.getAll.refetch();
       toast.success("Sub Kategori berhasil ditambahkan");
       closeRef.current?.click();
     },
@@ -72,19 +78,40 @@ const AddSubCategoryForm = () => {
   };
 
   const watchName = form.watch("name");
-  const updateSlug = _.debounce((name) => {
-    const slug = slugify(name as string, { lower: true, strict: true });
-    form.setValue("slug", slug || "");
-  }, 500);
+  const slugDirtyRef = useRef(false); // menandai user pernah edit slug
 
   useEffect(() => {
-    // Only update the global state if both fields are filled out
-    if (watchName) {
-      updateSlug(watchName);
-    } else {
-      form.setValue("slug", "");
+    const sub = form.watch((_all, { name, type }) => {
+      if (name === "slug" && type === "change") {
+        slugDirtyRef.current = true;
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [form]);
+
+  const updateSlug = useMemo(
+    () =>
+      _.debounce((name: string) => {
+        // hanya auto-generate bila slug belum pernah disentuh user
+        if (slugDirtyRef.current) return;
+        const next = slugify(name ?? "", { lower: true, strict: true });
+        form.setValue("slug", next || "", {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }, 400),
+    [form],
+  );
+
+  useEffect(() => {
+    if (typeof watchName === "string") {
+      if (watchName.trim().length) {
+        updateSlug(watchName);
+      } else if (!slugDirtyRef.current) {
+        form.setValue("slug", "", { shouldDirty: true, shouldValidate: true });
+      }
     }
-  }, [watchName]);
+  }, [watchName, form, updateSlug]);
 
   return (
     <Form {...form}>
@@ -110,31 +137,40 @@ const AddSubCategoryForm = () => {
               <FormItem>
                 <FormLabel>Slug</FormLabel>
                 <FormControl>
-                  <Input placeholder="Masukkan slug sub Kategori" {...field} />
+                  <InputGroup>
+                    <InputGroupInput
+                      placeholder="Masukkan slug sub Kategori"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        slugDirtyRef.current = true; // tandai manual edit
+                        field.onChange(e);
+                      }}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InputGroupButton
+                            variant="ghost"
+                            aria-label="Info"
+                            size="icon-xs"
+                            onClick={() => {
+                              if (field.value) {
+                                navigator.clipboard.writeText(field.value);
+                                toast.success("Slug disalin ke clipboard");
+                              }
+                            }}
+                          >
+                            <CopyIcon className="size-4" />
+                          </InputGroupButton>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <span>Salin</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </InputGroupAddon>
+                  </InputGroup>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="categoryId"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Kategori</FormLabel>
-                <Combobox
-                  loading={isLoadingCategories}
-                  options={
-                    categories?.map((cat) => ({
-                      label: cat.name,
-                      value: cat.id,
-                    })) || []
-                  }
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Pilih Kategori"
-                />
                 <FormMessage />
               </FormItem>
             )}
@@ -147,7 +183,10 @@ const AddSubCategoryForm = () => {
               type="button"
               variant="ghost"
               className="mr-3"
-              onClick={() => form.reset()}
+              onClick={() => {
+                form.reset();
+                slugDirtyRef.current = false;
+              }}
             >
               Batal
             </Button>

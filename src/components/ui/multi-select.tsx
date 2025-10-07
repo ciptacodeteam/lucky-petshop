@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { Spinner } from "./spinner";
 
 /**
  * Animation types and configurations
@@ -810,7 +811,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
               ref={buttonRef}
               {...props}
               onClick={handleTogglePopover}
-              disabled={disabled}
+              disabled={loading || disabled}
               role="combobox"
               aria-expanded={isPopoverOpen}
               aria-haspopup="listbox"
@@ -831,9 +832,18 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                 ...widthConstraints,
                 maxWidth: `min(${widthConstraints.maxWidth}, 100%)`,
               }}
-              loading={loading}
             >
-              {selectedValues.length > 0 ? (
+              {loading ? (
+                <div className="mx-auto flex w-full items-center justify-between">
+                  <div className="flex flex-1 items-center">
+                    <Spinner className="!text-muted-foreground ml-2" />
+                    <span className="text-muted-foreground mx-3 text-sm">
+                      {placeholder}
+                    </span>
+                  </div>
+                  <ChevronDown className="!text-muted-foreground mx-2 h-4 cursor-pointer" />
+                </div>
+              ) : selectedValues.length > 0 ? (
                 <div className="flex w-full items-center justify-between">
                   <div
                     className={cn(
@@ -935,7 +945,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                             >
                               <XCircle
                                 className={cn(
-                                  "size-3",
+                                  "!text-foreground size-3",
                                   responsiveSettings.compactMode && "size-2.5",
                                 )}
                               />
@@ -967,7 +977,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                         } more`}
                         <XCircle
                           className={cn(
-                            "ml-2 !size-4 cursor-pointer",
+                            "!text-foreground ml-2 !size-4 cursor-pointer",
                             responsiveSettings.compactMode && "ml-1 h-3 w-3",
                           )}
                           onClick={(event) => {
@@ -994,16 +1004,16 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                         }
                       }}
                       aria-label={`Clear all ${selectedValues.length} selected options`}
-                      className="text-muted-foreground hover:text-foreground focus:ring-ring mx-2 flex !size-4 cursor-pointer items-center justify-center rounded-sm focus:ring-2 focus:ring-offset-1 focus:outline-none"
+                      className="focus:ring-ring mx-2 flex !size-4 cursor-pointer items-center justify-center rounded-sm focus:ring-2 focus:ring-offset-1 focus:outline-none"
                     >
-                      <XIcon className="!size-4" />
+                      <XIcon className="!text-muted-foreground hover:text-foreground !size-4" />
                     </div>
                     <Separator
                       orientation="vertical"
                       className="flex h-full min-h-6"
                     />
                     <ChevronDown
-                      className="text-muted-foreground mx-2 h-4 cursor-pointer"
+                      className="!text-muted-foreground mx-2 h-4 cursor-pointer"
                       aria-hidden="true"
                     />
                   </div>
@@ -1131,14 +1141,14 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                           >
                             <div
                               className={cn(
-                                "border-primary mr-2 flex !size-4 items-center justify-center rounded-sm border",
+                                "border-primary mr-2 flex size-4.5 items-center justify-center rounded-sm border",
                                 isSelected
                                   ? "bg-primary text-primary-foreground"
                                   : "opacity-50 [&_svg]:invisible",
                               )}
                               aria-hidden="true"
                             >
-                              <CheckIcon className="!size-4" />
+                              <CheckIcon className="size-3 text-white" />
                             </div>
                             {option.icon && (
                               <option.icon
@@ -1174,14 +1184,14 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                         >
                           <div
                             className={cn(
-                              "border-primary mr-2 flex !size-4 items-center justify-center rounded-sm border",
+                              "border-primary mr-2 flex size-4.5 items-center justify-center rounded-sm border",
                               isSelected
                                 ? "bg-primary text-primary-foreground"
                                 : "opacity-50 [&_svg]:invisible",
                             )}
                             aria-hidden="true"
                           >
-                            <CheckIcon className="!size-4" />
+                            <CheckIcon className="size-3 text-white" />
                           </div>
                           {option.icon && (
                             <option.icon

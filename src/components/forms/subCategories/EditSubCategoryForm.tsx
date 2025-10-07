@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
 import { DialogClose } from "@/components/ui/dialog";
 import {
   Form,
@@ -12,10 +11,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { z } from "@/lib/zod";
 import { apiClient } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import _ from "lodash";
+import { CopyIcon } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import slugify from "slugify";
@@ -27,7 +38,6 @@ const formSchema = z.object({
     .min(2, "Nama sub Kategori minimal 2 karakter")
     .max(50, "Nama sub Kategori maksimal 50 karakter"),
   slug: z.string().optional().nullable(),
-  categoryId: z.string().optional().nullable(),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -50,9 +60,6 @@ const EditSubCategoryForm = ({ id, onDone }: EditSubCategoryFormProps) => {
     // optional: staleTime: 30_000,
   });
 
-  const { data: categories, isPending: isLoadingCategories } =
-    apiClient.admin.category.getAll.useQuery();
-
   /**
    * 2) RHF setup
    */
@@ -61,7 +68,6 @@ const EditSubCategoryForm = ({ id, onDone }: EditSubCategoryFormProps) => {
     defaultValues: {
       name: "",
       slug: "",
-      categoryId: undefined as string | undefined,
     },
     mode: "onChange",
   });
@@ -72,7 +78,6 @@ const EditSubCategoryForm = ({ id, onDone }: EditSubCategoryFormProps) => {
     form.reset({
       name: detail.name ?? "",
       slug: detail.slug ?? "",
-      categoryId: detail.categoryId ?? undefined,
     });
   }, [detail, form]);
 
@@ -84,12 +89,10 @@ const EditSubCategoryForm = ({ id, onDone }: EditSubCategoryFormProps) => {
 
   const { mutateAsync: updateMutate, isPending: isUpdating } =
     apiClient.admin.subCategory.update.useMutation({
-      onSuccess: async () => {
+      onSuccess: () => {
         // invalidate/refetch list & detail
-        await Promise.allSettled([
-          utils.admin.subCategory.getAll.invalidate(),
-          utils.admin.subCategory.getById.invalidate(id),
-        ]);
+        utils.admin.subCategory.getAll.refetch();
+        utils.admin.subCategory.getById.refetch(id);
         toast.success("Sub Kategori berhasil diperbarui");
         closeRef.current?.click();
         onDone?.();
@@ -108,7 +111,6 @@ const EditSubCategoryForm = ({ id, onDone }: EditSubCategoryFormProps) => {
       id,
       name: data.name.trim(),
       slug: (data.slug ?? "")?.trim() || null,
-      categoryId: data.categoryId || null,
     });
   };
 
@@ -198,41 +200,41 @@ const EditSubCategoryForm = ({ id, onDone }: EditSubCategoryFormProps) => {
               <FormItem>
                 <FormLabel>Slug</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Masukkan slug sub Kategori"
-                    {...field}
-                    value={field.value || ""}
-                    disabled={isLoadingDetail || isUpdating}
-                    onChange={(e) => {
-                      slugDirtyRef.current = true; // tandai manual edit
-                      field.onChange(e);
-                    }}
-                  />
+                  <InputGroup>
+                    <InputGroupInput
+                      placeholder="Masukkan slug sub Kategori"
+                      {...field}
+                      value={field.value || ""}
+                      disabled={isLoadingDetail || isUpdating}
+                      onChange={(e) => {
+                        slugDirtyRef.current = true; // tandai manual edit
+                        field.onChange(e);
+                      }}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <InputGroupButton
+                            variant="ghost"
+                            aria-label="Info"
+                            size="icon-xs"
+                            onClick={() => {
+                              if (field.value) {
+                                navigator.clipboard.writeText(field.value);
+                                toast.success("Slug disalin ke clipboard");
+                              }
+                            }}
+                          >
+                            <CopyIcon className="size-4" />
+                          </InputGroupButton>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <span>Salin</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </InputGroupAddon>
+                  </InputGroup>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="categoryId"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Kategori</FormLabel>
-                <Combobox
-                  loading={isLoadingCategories}
-                  options={
-                    categories?.map((cat) => ({
-                      label: cat.name,
-                      value: cat.id,
-                    })) || []
-                  }
-                  value={field.value ?? undefined}
-                  onValueChange={(v) => field.onChange(v ?? null)}
-                  placeholder="Pilih Kategori"
-                  disabled={isLoadingDetail || isUpdating}
-                />
                 <FormMessage />
               </FormItem>
             )}
@@ -251,7 +253,6 @@ const EditSubCategoryForm = ({ id, onDone }: EditSubCategoryFormProps) => {
                   form.reset({
                     name: detail.name ?? "",
                     slug: detail.slug ?? "",
-                    categoryId: detail.categoryId ?? undefined,
                   });
                 } else {
                   form.reset();

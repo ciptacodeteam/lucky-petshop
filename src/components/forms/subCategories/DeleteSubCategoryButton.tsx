@@ -19,12 +19,13 @@ export function DeleteSubCategoryButton({ id }: { id: string }) {
         error: (e) => (e as Error)?.message ?? "Gagal menghapus",
       },
       // pilih salah satu:
-      invalidate: async (utils) => {
-        await utils.admin.subCategory.getAll.invalidate();
+      invalidate: (utils) => {
+        utils.admin.subCategory.getAll.refetch();
+        utils.admin.category.getAll.refetch();
       },
       // atau refetch:
-      // refetch: async (utils) => {
-      //   await utils.admin.subCategory.getAll.refetch();
+      // refetch:  (utils) => {
+      //   utils.admin.subCategory.getAll.refetch();
       // },
     },
   );

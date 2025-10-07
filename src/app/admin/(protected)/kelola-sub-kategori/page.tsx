@@ -1,33 +1,21 @@
-import AddSubCategoryForm from "@/components/forms/subCategories/AddSubCategoryForm";
-import Modal from "@/components/modals/Modal";
 import Section from "@/components/sections/Section";
-import { DataTable } from "@/components/ui/data-table";
-import { api } from "@/trpc/server";
-import { columns } from "./columns";
+import SubCategoryTable from "@/components/tables/SubCategoryTable";
+import { api, HydrateClient } from "@/trpc/server";
 
 const ManageSubCategoryPage = async () => {
-  const data = await api.admin.subCategory.getAll();
+  void api.admin.subCategory.getAll.prefetch();
 
   return (
-    <main>
-      <Section
-        title="Kelola Sub Kategori"
-        description="Halaman untuk mengelola sub kategori seperti menambah, mengedit, dan menghapus sub kategori."
-      >
-        <DataTable
-          data={data || []}
-          columns={columns}
-          addButton={
-            <Modal
-              title="Tambah Sub Kategori"
-              description="Form untuk menambah sub kategori baru"
-            >
-              <AddSubCategoryForm />
-            </Modal>
-          }
-        />
-      </Section>
-    </main>
+    <HydrateClient>
+      <main>
+        <Section
+          title="Kelola Sub Kategori"
+          description="Halaman untuk mengelola sub kategori seperti menambah, mengedit, dan menghapus sub kategori."
+        >
+          <SubCategoryTable />
+        </Section>
+      </main>
+    </HydrateClient>
   );
 };
 export default ManageSubCategoryPage;
