@@ -1,8 +1,9 @@
 import { adminAuthRouter } from "@/server/api/routers/admin/auth";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
+import { adminAnnouncementRouter } from "./routers/admin/announcement";
 import { adminCategoryRouter } from "./routers/admin/category";
 import { adminSubCategoryRouter } from "./routers/admin/subCategory";
-import { adminAnnouncementRouter } from "./routers/admin/announcement";
+import { adminBankAccountRouter } from "./routers/admin/bankAccount";
 
 /**
  * This is the primary router for your server.
@@ -17,6 +18,7 @@ const adminRoutes = {
     category: adminCategoryRouter,
     subCategory: adminSubCategoryRouter,
     announcement: adminAnnouncementRouter,
+    bankAccount: adminBankAccountRouter,
   },
 };
 

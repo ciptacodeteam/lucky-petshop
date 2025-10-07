@@ -107,8 +107,8 @@ const data = {
           url: "/admin/kelola-sub-kategori",
         },
         {
-          title: "Kelola Tipe Produk",
-          url: "/admin/kelola-tipe-produk",
+          title: "Kelola Akun Bank",
+          url: "/admin/kelola-akun-bank",
         },
       ],
     },

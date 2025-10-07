@@ -73,19 +73,23 @@ export function NavMain({
                   </CollapsibleContent>
                 </>
               ) : (
-                <SidebarMenuButton asChild tooltip={item.title}>
+                <>
                   {item.url ? (
-                    <Link href={item.url} prefetch>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
+                    <SidebarMenuButton asChild tooltip={item.title}>
+                      <Link href={item.url} prefetch>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
                   ) : (
-                    <div className="flex w-full cursor-pointer items-center gap-2">
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </div>
+                    <SidebarMenuButton asChild tooltip={item.title}>
+                      <div className="flex w-full cursor-pointer items-center gap-2">
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </div>
+                    </SidebarMenuButton>
                   )}
-                </SidebarMenuButton>
+                </>
               )}
             </SidebarMenuItem>
           </Collapsible>

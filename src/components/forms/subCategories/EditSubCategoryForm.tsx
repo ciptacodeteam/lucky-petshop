@@ -107,7 +107,7 @@ const EditSubCategoryForm = ({ id, onDone }: EditSubCategoryFormProps) => {
     if (!detail) return;
 
     // Hindari kirim field unchanged bila backend ketat; tapi aman kirim semua:
-    await updateMutate({
+    updateMutate({
       id,
       name: data.name.trim(),
       slug: (data.slug ?? "")?.trim() || null,

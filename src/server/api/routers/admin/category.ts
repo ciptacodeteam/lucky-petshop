@@ -40,7 +40,10 @@ export const adminCategoryRouter = createTRPCRouter({
           include: { subCategories: true },
         });
         if (!category) {
-          throw new Error("Kategori tidak ditemukan");
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Kategori tidak ditemukan",
+          });
         }
         return category;
       } catch (error) {
